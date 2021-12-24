@@ -1,3 +1,5 @@
+const { QueryType } = require('discord-player');
+
 module.exports = {
   data: {
 		name: 'play',
@@ -11,14 +13,15 @@ module.exports = {
 			}
 		]
 	},
-  async execute(interaction) {
+  
+  async execute({ interaction, player }) {
     if (!interaction.member.voice.channelId) {
       return await interaction.reply({
         content: "You are not in a voice channel!",
         ephemeral: true
       });
     }
-    
+
     const query = interaction.options.get('query').value;
     const searchResult = await player
       .search(query, {
@@ -31,7 +34,7 @@ module.exports = {
         `No results found for ${interaction.user.username}`
       )
     }
-    const { tracks: [track]} = searchResult
+    const { tracks: [track] } = searchResult
 
 
     const queue = player.createQueue(interaction.guild, {

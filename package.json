@@ -2,7 +2,7 @@
   "name": "dcjs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
     "dev": "nodemon src/main.js",
     "start": "node src/main.js"

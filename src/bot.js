@@ -1,6 +1,12 @@
-const { DC_TOKEN } = process.env;
+const { DC_TOKEN, DC_CLIENT_ID, DC_GUILD_ID } = process.env;
 const { Client: DcClient, Intents } = require('discord.js');
-const { Player, QueryType } = require('discord-player');
+const { Player } = require('discord-player');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
+const { loadCommands, getCommandsData } = require('./loadCommands');
+
+const rest = new REST({ version: '9' }).setToken(DC_TOKEN);
+
 
 async function setupBot() {
 	const client = new DcClient({
@@ -11,86 +17,46 @@ async function setupBot() {
 			Intents.FLAGS.GUILD_VOICE_STATES
 		]
 	});
-	const player = playerFactory(client);
+
+	try {
+		await rest.put(
+			Routes.applicationGuildCommands(DC_CLIENT_ID, DC_GUILD_ID),
+			{ body: getCommandsData() }
+		)
+		console.log('Successfully registered application commands.')
+	} catch (err) {
+		console.log('err', err);
+	}
+
+	client.commands = loadCommands();
+
+	const player = new Player(client);
 
 	client.once('ready', () => {
 		console.log('The bot is ready');
 	})
 
 	player.on("trackStart", (queue, { title }) => {
-		
 		return queue.metadata.channel.send(`🎶 | Now playing **${title}**!`)
 	})
 
 
 	client.on('interactionCreate', async (interaction) => {
 		if (!interaction.isCommand()) return;
-
-		const { commandName } = interaction;
-
-		if (commandName === 'ping') {
-			return await interaction.reply('Pong!');
-		}
-		if (commandName === 'play') {
-			if (!interaction.member.voice.channelId) {
-				return await interaction.reply({
-					content: "You are not in a voice channel!",
-					ephemeral: true
-				});
-			}
-			const query = interaction.options.get('query').value;
-			const searchResult = await player
-				.search(query, {
-					requestedBy: interaction.user,
-					searchEngine: QueryType.AUTO
-				})
-			if (!searchResult || !searchResult.tracks.length) {
-				console.log('track not found');
-				return await interaction.channel.send(
-					`No results found for ${interaction.user.username}`
-				)
-			}
-			const { tracks: [track]} = searchResult
-
-
-			const queue = player.createQueue(interaction.guild, {
-				metadata: {
-					channel: interaction.channel
-				}
-			});
-
-			try {
-				if (!queue.connection) {
-					await queue.connect(interaction.member.voice.channel);
-				}
-			} catch {
-				queue.destroy();
-				console.log('something went wrong');
-				return await interaction.reply({
-					content: "Could not join your voice channel!",
-					ephemeral: true
-				});
-			}
-			// await interaction.deferReply({  });
-			
-
-			await interaction.channel.send(`Playing`)
-			if (!queue.playing) {
-				await queue.play(track);
-			}
-			// return await interaction.followUp({
-			// 	content: `⏱️ | Loading track **${track.title}**!`
-			// });
-		}
-
 		
+		const { commandName } = interaction;
+		const cmd = client.commands.get(commandName)
 
+		if (!cmd) return;
+		
+		try {
+			await cmd.execute({ interaction, player })
+		} catch (err) {
+			console.error(err)
+			await interaction.reply({ content: `Error occured during calling ${commandName} command`, ephemeral: true })
+		}
 	})
 	await client.login(DC_TOKEN);
-}
-
-function playerFactory(dcClient) {
-	return new Player(dcClient)
 }
 
 module.exports = {
