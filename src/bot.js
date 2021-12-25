@@ -41,17 +41,20 @@ async function setupBot() {
 	client.on('interactionCreate', async (interaction) => {
 		if (!interaction.isCommand()) return;
 		
-		const { commandName } = interaction;
+		const { commandName, user } = interaction;
 		const cmd = client.commands.get(commandName)
-
 		if (!cmd) return;
-		
+
 		try {
 			const commandLogger = logger.child({
-				executer: interaction.user.username,
+				executor: user.username,
 				commandName
 			})
-			await cmd.execute({ interaction, player, logger: commandLogger })
+			await cmd.execute({
+				interaction,
+				player,
+				logger: commandLogger
+			})
 		} catch (err) {
 			logger.error(
 				{ error: err, commandName: commandName },

@@ -8,7 +8,7 @@ const logger = pino({
     colorize: true,
     levelFirst: true,
     translateTime: 'yyyy-mm-dd HH:MM:ss'
-  } : false
+  } : { colorize: true }
 });
 
 module.exports = logger
