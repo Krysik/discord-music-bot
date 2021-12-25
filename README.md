@@ -7,6 +7,13 @@ I keeps every command in the `commands` directory.
 - `/pause` - pauses a song
 - `/help` - displays available commands
 
+### Environment variable
+
+- DC_GUILD_ID - The id of your discord server
+- DC_TOKEN - The token of your bot
+- DC_CLIENT_ID - The discord client id
+- NODE_ENV - one of ["development", "production"]
+
 ### Available scripts
 
 - npm start - starts the node app without live reload
