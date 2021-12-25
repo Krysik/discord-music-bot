@@ -1,7 +1,7 @@
 {
   "name": "dcjs",
   "version": "1.0.0",
-  "description": "",
+  "description": "The music bot for discord",
   "main": "src/main.js",
   "scripts": {
     "dev": "nodemon src/main.js",
@@ -17,7 +17,9 @@
     "discord-player": "^5.2.0",
     "discord.js": "^13.3.1",
     "dotenv": "^10.0.0",
-    "ffmpeg-static": "^4.4.0"
+    "ffmpeg-static": "^4.4.0",
+    "pino": "^7.6.1",
+    "pino-pretty": "^7.3.0"
   },
   "devDependencies": {
     "eslint": "^8.4.1",

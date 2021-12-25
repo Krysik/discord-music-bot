@@ -14,7 +14,7 @@ module.exports = {
 		]
 	},
   
-  async execute({ interaction, player }) {
+  async execute({ interaction, player, logger }) {
     if (!interaction.member.voice.channelId) {
       return await interaction.reply({
         content: "You are not in a voice channel!",
@@ -29,7 +29,7 @@ module.exports = {
         searchEngine: QueryType.AUTO
       })
     if (!searchResult || !searchResult.tracks.length) {
-      console.log('track not found');
+      logger.warn({ query }, 'track not found')
       return await interaction.channel.send(
         `No results found for ${interaction.user.username}`
       )
@@ -49,7 +49,13 @@ module.exports = {
       }
     } catch {
       queue.destroy();
-      console.log('something went wrong');
+      logger.error(
+        {
+          username: interaction.user.username,
+          channelId: interaction.member.voice.channelId
+        },
+        'something went wrong when queue tried to connect'
+      )
       return await interaction.reply({
         content: "Could not join your voice channel!",
         ephemeral: true
@@ -60,6 +66,7 @@ module.exports = {
 
     await interaction.channel.send(`Playing`)
     if (!queue.playing) {
+      logger.info(`playing ${track.title}`)
       await queue.play(track);
     }
   }

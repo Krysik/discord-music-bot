@@ -4,6 +4,7 @@ const { Player } = require('discord-player');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { loadCommands, getCommandsData } = require('./loadCommands');
+const logger = require('./logger');
 
 const rest = new REST({ version: '9' }).setToken(DC_TOKEN);
 
@@ -23,18 +24,14 @@ async function setupBot() {
 			Routes.applicationGuildCommands(DC_CLIENT_ID, DC_GUILD_ID),
 			{ body: getCommandsData() }
 		)
-		console.log('Successfully registered application commands.')
+		logger.info('Successfully registered application commands.')
 	} catch (err) {
-		console.log('err', err);
+		logger.error({ error: err }, 'error when trying to register the commands');
 	}
 
 	client.commands = loadCommands();
 
 	const player = new Player(client);
-
-	client.once('ready', () => {
-		console.log('The bot is ready');
-	})
 
 	player.on("trackStart", (queue, { title }) => {
 		return queue.metadata.channel.send(`🎶 | Now playing **${title}**!`)
@@ -50,10 +47,20 @@ async function setupBot() {
 		if (!cmd) return;
 		
 		try {
-			await cmd.execute({ interaction, player })
+			const commandLogger = logger.child({
+				executer: interaction.user.username,
+				commandName
+			})
+			await cmd.execute({ interaction, player, logger: commandLogger })
 		} catch (err) {
-			console.error(err)
-			await interaction.reply({ content: `Error occured during calling ${commandName} command`, ephemeral: true })
+			logger.error(
+				{ error: err, commandName: commandName },
+				'error when trying to execute the command'
+			);
+			await interaction.reply({
+				content: `Error occured during calling ${commandName} command`,
+				ephemeral: true
+			})
 		}
 	})
 	await client.login(DC_TOKEN);
