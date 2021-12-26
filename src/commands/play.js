@@ -6,7 +6,7 @@ module.exports = {
 		description: 'plays a song',
 		options: [
 			{
-				name: 'query',
+				name: 'url',
 				type: 3,
 				description: 'The song you want to play',
 				required: true
@@ -14,7 +14,7 @@ module.exports = {
 		]
 	},
   
-  async execute({ interaction, player, logger }) {
+  async execute({ interaction, player, logger, url }) {
     if (!interaction.member.voice.channelId) {
       return await interaction.reply({
         content: "You are not in a voice channel!",
@@ -22,7 +22,7 @@ module.exports = {
       });
     }
 
-    const query = interaction.options.get('query').value;
+    const query = url || interaction.options.get('url').value;
     const searchResult = await player
       .search(query, {
         requestedBy: interaction.user,
@@ -47,12 +47,16 @@ module.exports = {
       if (!queue.connection) {
         await queue.connect(interaction.member.voice.channel);
       }
-    } catch {
+      await interaction.channel.send(`Playing`)
+      logger.info(`playing ${track.title}`)
+      await queue.play(track);
+    } catch (err) {
       queue.destroy();
       logger.error(
         {
           username: interaction.user.username,
-          channelId: interaction.member.voice.channelId
+          channelId: interaction.member.voice.channelId,
+          error: err,
         },
         'something went wrong when queue tried to connect'
       )
@@ -63,11 +67,5 @@ module.exports = {
     }
     // await interaction.deferReply({  });
     
-
-    await interaction.channel.send(`Playing`)
-    if (!queue.playing) {
-      logger.info(`playing ${track.title}`)
-      await queue.play(track);
-    }
   }
 }
