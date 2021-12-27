@@ -8,7 +8,7 @@ module.exports = {
 			{
 				name: 'url',
 				type: 3,
-				description: 'The song you want to play',
+				description: 'The url to song you want to play',
 				required: true
 			}
 		]
