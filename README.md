@@ -9,13 +9,13 @@ I keeps every command in the `commands` directory.
 
 ### Environment variable
 
-- DC_GUILD_ID - The id of your discord server
-- DC_TOKEN - The token of your bot
-- DC_CLIENT_ID - The discord client id
-- NODE_ENV - one of ["development", "production"]
+- `DC_GUILD_ID` - The id of your discord server
+- `DC_TOKEN` - The token of your bot
+- `DC_CLIENT_ID` - The discord client id
+- `NODE_ENV` - one of ["development", "production"]
 
 ### Available scripts
 
-- npm start - starts the node app without live reload
-- npm run dev - starts the node app with live reload
+- `npm start` - starts the node app without live reload
+- `npm run dev` - starts the node app with live reload
 
