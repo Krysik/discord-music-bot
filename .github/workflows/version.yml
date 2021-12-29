@@ -1,0 +1,32 @@
+name: Set the version
+
+on:
+  push:
+    branches: [master]
+  # pull_request:
+  #   branches: [master]
+
+env:
+  DC_TOKEN: ${{ secrets.DC_TOKEN }}
+  DC_CLIENT_ID: ${{ secrets.DC_CLIENT_ID }}
+  DC_GUILD_ID: ${{ secrets.DC_GUILD_ID }}
+  NODE_ENV: production
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.7
+        with:
+          versionSpec: '5.x'
+
+      - name: Set version number in package.json
+        run: echo "$GIT_SEMVER" && jq '.version="1.1.0"' package.json > package.tmp.json && mv package.tmp.json package.json
+        env:
+          GIT_SEMVER: $GitVersion.SemVer
+      
