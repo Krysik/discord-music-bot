@@ -1,6 +1,6 @@
 {
   "name": "dcjs",
-  "version": "1.2.0",
+  "version": "0.4.0",
   "description": "The music bot for discord",
   "main": "src/main.js",
   "scripts": {

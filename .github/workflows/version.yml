@@ -36,5 +36,5 @@ jobs:
 
       - name: Set version number in package.json
         run: |
-          echo "$GITVERSION_SEMVER" && jq '.version="1.1.0"' package.json > package.tmp.json && mv package.tmp.json package.json
+          npm version $GITVERSION_SEMVER
       
