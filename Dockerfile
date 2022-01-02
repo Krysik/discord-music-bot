@@ -1,7 +1,7 @@
 FROM node:16-alpine3.12
 
 WORKDIR /opt/app
-COPY package*.json .
+COPY package*.json ./
 
 RUN apt-get -y update \
   apt-get install -y ffmpeg
