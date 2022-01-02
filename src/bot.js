@@ -29,7 +29,7 @@ async function setupBot() {
 		logger.error({ error: err }, 'error when trying to register the commands');
 	}
 
-	client.commands = loadCommands();
+	const commands = loadCommands();
 
 	const player = new Player(client);
 
@@ -42,7 +42,7 @@ async function setupBot() {
 		if (!interaction.isCommand()) return;
 		
 		const { commandName, user } = interaction;
-		const cmd = client.commands.get(commandName)
+		const cmd = commands.get(commandName)
 		if (!cmd) return;
 
 		try {
