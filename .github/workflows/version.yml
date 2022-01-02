@@ -6,11 +6,6 @@ on:
   # pull_request:
   #   branches: [master]
 
-env:
-  DC_TOKEN: ${{ secrets.DC_TOKEN }}
-  DC_CLIENT_ID: ${{ secrets.DC_CLIENT_ID }}
-  DC_GUILD_ID: ${{ secrets.DC_GUILD_ID }}
-  NODE_ENV: production
 
 jobs:
   build:
