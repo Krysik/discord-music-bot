@@ -1,11 +1,9 @@
-FROM node:16-alpine3.12
+FROM node:16.13-alpine3.14
 
 WORKDIR /opt/app
 COPY package*.json ./
 
-RUN apt-get -y update \
-  apt-get install -y ffmpeg
-
+RUN apk add --update python3
 ENV NODE_ENV=production
 
 RUN npm install
