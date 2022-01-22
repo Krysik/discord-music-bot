@@ -33,14 +33,17 @@ async function setupBot() {
 
 	const player = new Player(client);
 
-	player.on("trackStart", (queue, { title }) => {
-		return queue.metadata.channel.send(`🎶 | Now playing **${title}**!`)
+	player.on("trackStart", (queue, { title, requestedBy: { username } }) => {
+		return queue.metadata.channel.send(`
+			🎶 | Now playing **${title}**!\n
+			Requested by: ${username}
+		`)
 	})
 
 
 	client.on('interactionCreate', async (interaction) => {
 		if (!interaction.isCommand()) return;
-		
+
 		const { commandName, user } = interaction;
 		const cmd = commands.get(commandName)
 		if (!cmd) return;
