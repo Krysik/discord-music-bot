@@ -1,4 +1,21 @@
-const { QueryType } = require('discord-player');
+const { Track } = require('discord-player');
+const { YouTube } = require('youtube-sr')
+
+function getTrack(player) {
+  return async ({ url, requestedBy }) => {
+    const video = await YouTube.getVideo(url);
+
+    return new Track(player, {
+      title: video.title,
+      description: video.description,
+      author: video.author?.name,
+      requestedBy,
+      source: 'youtube',
+      url: video.url,
+      raw: video
+    })
+  }
+}
 
 module.exports = {
   data: {
@@ -22,20 +39,11 @@ module.exports = {
       });
     }
 
-    const query = url || interaction.options.get('url').value;
-    const searchResult = await player
-      .search(query, {
-        requestedBy: interaction.user,
-        searchEngine: QueryType.AUTO
-      })
-    if (!searchResult || !searchResult.tracks.length) {
-      logger.warn({ query }, 'track not found')
-      return await interaction.channel.send(
-        `No results found for ${interaction.user.username}`
-      )
-    }
-    const { tracks: [track] } = searchResult
-
+    const passedUrl = url || interaction.options.get('url').value;
+    const track = await getTrack(player)({
+      url: passedUrl,
+      requestedBy: interaction.user
+    });
 
     const queue = player.createQueue(interaction.guild, {
       metadata: {
@@ -65,7 +73,5 @@ module.exports = {
         ephemeral: true
       });
     }
-    // await interaction.deferReply({  });
-    
   }
 }

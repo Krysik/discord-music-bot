@@ -59,6 +59,7 @@ async function setupBot() {
 				logger: commandLogger
 			})
 		} catch (err) {
+			console.log(err);
 			logger.error(
 				{ error: err, commandName: commandName },
 				'error when trying to execute the command'
