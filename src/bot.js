@@ -34,9 +34,11 @@ async function setupBot() {
 	const player = new Player(client);
 
 	player.on("trackStart", (queue, { title, requestedBy: { username } }) => {
+		const { url } = queue.current;
 		return queue.metadata.channel.send(`
 			🎶 | Now playing **${title}**!\n
-			Requested by: ${username}
+			Requested by: ${username}\n
+			URL: ${url}
 		`)
 	})
 
@@ -73,6 +75,4 @@ async function setupBot() {
 	await client.login(DC_TOKEN);
 }
 
-module.exports = {
-	setupBot
-}
+module.exports = { setupBot }
