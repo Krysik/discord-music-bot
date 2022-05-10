@@ -4,8 +4,8 @@
   "description": "The music bot for discord",
   "main": "src/main.js",
   "scripts": {
-    "dev": "nodemon src/main.js",
-    "start": "node src/main.js"
+    "dev": "nodemon -r dotenv/config src/main.js",
+    "start": "node -r dotenv/config  src/main.js"
   },
   "author": "",
   "license": "ISC",
