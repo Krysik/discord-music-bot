@@ -1,7 +1,7 @@
 module.exports = {
   data: {
     name: 'pause',
-    description: 'pauses the song'
+    description: 'pauses the song',
   },
   async execute({ interaction, player }) {
     const queue = player.getQueue(interaction.guild.id);
@@ -14,5 +14,5 @@ module.exports = {
       ? `${queue.current.title} has been paused`
       : 'Something went wrong';
     return await interaction.channel.send(msg);
-  }
-}
+  },
+};

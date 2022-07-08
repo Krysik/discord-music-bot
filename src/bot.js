@@ -47,22 +47,39 @@ async function setupBot() {
     const cmd = commands.get(commandName);
     if (!cmd) return;
 
+    const commandLogger = logger.child({
+      executor: user.username,
+      commandName,
+    });
+
+    const queue = player.createQueue(interaction.guild, {
+      metadata: {
+        channel: interaction.channel,
+      },
+    });
+
     try {
-      const commandLogger = logger.child({
-        executor: user.username,
-        commandName,
-      });
+      if (!queue.connection) {
+        await queue.connect(interaction.member.voice.channel);
+      }
+
       await cmd.execute({
         interaction,
         player,
         logger: commandLogger,
+        queue,
       });
     } catch (err) {
-      console.log(err);
       logger.error(
-        { error: err, commandName: commandName },
-        'error when trying to execute the command'
+        {
+          error: err,
+          commandName: commandName,
+          username: interaction.user.username,
+          channelId: interaction.member.voice.channelId,
+        },
+        `error when trying to execute the command ${commandName}`
       );
+      queue.destroy();
       await interaction.reply({
         content: `Error occured during calling ${commandName} command`,
         ephemeral: true,

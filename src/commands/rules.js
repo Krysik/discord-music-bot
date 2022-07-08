@@ -5,8 +5,8 @@ module.exports = {
     name: 'rules',
     description: 'there are only 2 rules',
   },
-  async execute({ interaction, player, logger }) {
-    const url = 'https://youtu.be/uPjoCh022BM'
-    await playSong({ interaction, player, logger, url })
-  }
-}
+  async execute({ interaction, player, logger, queue }) {
+    const url = 'https://youtu.be/uPjoCh022BM';
+    await playSong({ interaction, player, logger, url, queue });
+  },
+};
