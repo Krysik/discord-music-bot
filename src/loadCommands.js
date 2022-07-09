@@ -8,8 +8,8 @@ const commandDirPath = path.join(__dirname, 'commands');
 function loadCommands() {
   const commandFiles = fs
     .readdirSync(commandDirPath)
-    .filter((file) => file.endsWith('.js'))
-    
+    .filter((file) => file.endsWith('.js'));
+
   const map = new Collection();
   logger.info('loading the commands');
   for (const file of commandFiles) {
@@ -24,7 +24,7 @@ function loadCommands() {
 function getCommandsData() {
   const commandFiles = fs
     .readdirSync(commandDirPath)
-    .filter((file) => file.endsWith('.js'))
+    .filter((file) => file.endsWith('.js'));
 
   const commandsData = [];
   for (const file of commandFiles) {
@@ -35,4 +35,4 @@ function getCommandsData() {
   return commandsData;
 }
 
-module.exports = { loadCommands, getCommandsData }
+module.exports = { loadCommands, getCommandsData };

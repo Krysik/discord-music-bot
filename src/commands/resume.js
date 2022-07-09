@@ -14,5 +14,5 @@ module.exports = {
       : 'Something went wrong';
 
     return await interaction.channel.send(msg);
-  }
-}
+  },
+};

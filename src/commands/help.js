@@ -9,16 +9,15 @@ module.exports = {
     const commandsInfo = getCommandsData();
 
     let message = 'Available commands\n';
-    
+
     for (const { name, description, options } of commandsInfo) {
-      message += `cmd: **${name}** - ${description}\n`
+      message += `cmd: **${name}** - ${description}\n`;
       if (options) {
         for (const option of options) {
           const {
             name: optionName,
-            description:
-            optionDescription,
-            required
+            description: optionDescription,
+            required,
           } = option;
           message += `
             - **${optionName}** (required: ${required}): ${optionDescription}
@@ -30,7 +29,7 @@ module.exports = {
 
     return await interaction.reply({
       content: message,
-      ephemeral: true
+      ephemeral: true,
     });
-  }
-}
+  },
+};
