@@ -26,13 +26,6 @@ export class PlayCmd extends BaseCommand {
     }: { interaction: CommandInteraction<CacheType>; queue: Queue },
     { url }: { url?: string }
   ) {
-    // if (!interaction.member.voice.channelId) {
-    //   return await interaction.reply({
-    //     content: 'You are not in a voice channel!',
-    //     ephemeral: true,
-    //   });
-    // }
-
     const passedUrl = url || interaction.options.get('url')?.value;
     if (!passedUrl) {
       this.logger.error('empty url');
