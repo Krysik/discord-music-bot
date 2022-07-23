@@ -13,7 +13,6 @@
     "lib": ["es2020"],
     "forceConsistentCasingInFileNames": true,
     "noUncheckedIndexedAccess": true,
-    "baseUrl": "./src",
     "esModuleInterop": true
   },
   "include": ["./src/**/*.ts"],
