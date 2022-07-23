@@ -1,7 +1,8 @@
 import { Player, Queue, Track } from 'discord-player';
-import { CacheType, CommandInteraction, User } from 'discord.js';
+import { User } from 'discord.js';
 import { YouTube } from 'youtube-sr';
 import { BaseCommand, CommandDeps } from '../BaseCommand';
+import { ValidDcInteraction } from '../bot';
 
 export class PlayCmd extends BaseCommand {
   constructor(deps: CommandDeps) {
@@ -23,10 +24,15 @@ export class PlayCmd extends BaseCommand {
     {
       interaction,
       queue,
-    }: { interaction: CommandInteraction<CacheType>; queue: Queue },
-    { url }: { url?: string }
-  ) {
-    const passedUrl = url || interaction.options.get('url')?.value;
+    }: {
+      interaction: ValidDcInteraction;
+      queue: Queue<unknown>;
+    },
+    eventParams: { url?: string } | undefined
+  ): Promise<void> {
+    const passedUrl =
+      (eventParams && eventParams.url) ||
+      interaction.options.get('url', true).value;
     if (!passedUrl) {
       this.logger.error('empty url');
       return;

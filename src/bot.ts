@@ -91,7 +91,6 @@ async function setupBot() {
         interaction: interaction as ValidDcInteraction,
         queue,
       });
-      queue.stop();
     } catch (err) {
       logger.error(
         {
@@ -100,7 +99,7 @@ async function setupBot() {
           username: interaction.user.username,
           channelId: interaction.channelId,
         },
-        `error when trying to execute the command ${commandName}`
+        `error when trying to execute the ${commandName} command`
       );
 
       if (err instanceof CommandNotFound) {

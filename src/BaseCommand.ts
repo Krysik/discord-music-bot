@@ -45,7 +45,7 @@ abstract class BaseCommand implements Command {
 
   abstract execute(
     event: { interaction: ValidDcInteraction; queue: Queue },
-    args?: { url?: string }
+    args?: { url?: string } | undefined
   ): Promise<void>;
 
   public getCommandData() {

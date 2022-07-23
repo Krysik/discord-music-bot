@@ -12,6 +12,7 @@ export class PingCmd extends BaseCommand {
 
   async execute({
     interaction,
+    queue,
   }: {
     interaction: ValidDcInteraction;
     queue: Queue<unknown>;
@@ -20,5 +21,6 @@ export class PingCmd extends BaseCommand {
       content: 'Pong!',
       ephemeral: true,
     });
+    queue.destroy();
   }
 }
