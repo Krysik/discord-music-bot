@@ -34,7 +34,12 @@ async function setupBot() {
       Intents.FLAGS.GUILD_VOICE_STATES,
     ],
   });
-  const player = new Player(client);
+  const player = new Player(client, {
+    connectionTimeout: 5_000,
+  });
+
+  player.queues.forEach((q) => q.destroy(true));
+
   const { DC_TOKEN, DC_CLIENT_ID, DC_GUILD_ID } = validateDiscordEnvs();
   await client.login(DC_TOKEN);
 
@@ -173,11 +178,14 @@ async function registerApplicationCommands({
   dcGuildId: string;
 }) {
   try {
+    const commandsData = getCommandsData({ logger, player });
     const rest = new REST({ version: '9' }).setToken(dcToken);
     await rest.put(Routes.applicationGuildCommands(dcClientId, dcGuildId), {
-      body: getCommandsData({ logger, player }),
+      body: commandsData,
     });
-    logger.info('Successfully registered application commands.');
+    logger.info(
+      `Successfully registered ${commandsData.length} application commands.`
+    );
   } catch (err) {
     logger.error({ error: err }, 'error when trying to register the commands');
     throw err;

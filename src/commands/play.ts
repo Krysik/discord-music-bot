@@ -23,7 +23,6 @@ export class PlayCmd extends BaseCommand {
   async execute(
     {
       interaction,
-      queue,
     }: {
       interaction: ValidDcInteraction;
       queue: Queue<unknown>;
@@ -45,6 +44,7 @@ export class PlayCmd extends BaseCommand {
     if (interaction.channel) {
       await interaction.channel.send(`Playing`);
     }
+    const queue = this.player.getQueue(interaction.guild.id);
     this.logger.info(`playing ${track.title}`);
     await queue.play(track);
   }
