@@ -1,7 +1,6 @@
 const { DC_TOKEN, DC_CLIENT_ID, DC_GUILD_ID } = process.env;
-const { Client: DcClient, Intents } = require('discord.js');
+const { Client: DcClient, GatewayIntentBits, REST } = require('discord.js');
 const { Player } = require('discord-player');
-const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 const { loadCommands, getCommandsData } = require('./loadCommands');
 const logger = require('./logger');
@@ -11,10 +10,10 @@ const rest = new REST({ version: '9' }).setToken(DC_TOKEN);
 async function setupBot() {
   const client = new DcClient({
     intents: [
-      Intents.FLAGS.GUILDS,
-      Intents.FLAGS.GUILD_MEMBERS,
-      Intents.FLAGS.GUILD_MESSAGES,
-      Intents.FLAGS.GUILD_VOICE_STATES,
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMembers,
+      GatewayIntentBits.GuildMessages,
+      GatewayIntentBits.GuildVoiceStates,
     ],
   });
 
@@ -62,7 +61,7 @@ async function setupBot() {
       if (!queue.connection) {
         await queue.connect(interaction.member.voice.channel);
       }
-
+      commandLogger.info('invoking a command');
       await cmd.execute({
         interaction,
         player,
