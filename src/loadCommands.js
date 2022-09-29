@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { Collection } = require('discord.js');
 const path = require('path');
 const logger = require('./logger');
 
@@ -10,7 +9,7 @@ function loadCommands() {
     .readdirSync(commandDirPath)
     .filter((file) => file.endsWith('.js'));
 
-  const map = new Collection();
+  const map = new Map();
   logger.info('loading the commands');
   for (const file of commandFiles) {
     const command = require(`./commands/${file}`);
@@ -21,15 +20,14 @@ function loadCommands() {
   return map;
 }
 
-function getCommandsData() {
-  const commandFiles = fs
-    .readdirSync(commandDirPath)
-    .filter((file) => file.endsWith('.js'));
-
+/**
+ *
+ * @param {Map<string, {name: string; description: string}>} commandsMap
+ * @returns {{name: string; description: string}[]}
+ */
+function getCommandsData(commandsMap) {
   const commandsData = [];
-  for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
-
+  for (const command of commandsMap.values()) {
     commandsData.push(command.data);
   }
   return commandsData;

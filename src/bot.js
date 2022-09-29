@@ -16,7 +16,7 @@ async function setupBot() {
       GatewayIntentBits.GuildVoiceStates,
     ],
   });
-
+  const commands = loadCommands();
   try {
     await rest.put(Routes.applicationGuildCommands(DC_CLIENT_ID, DC_GUILD_ID), {
       body: getCommandsData(),
@@ -25,8 +25,6 @@ async function setupBot() {
   } catch (err) {
     logger.error({ error: err }, 'error when trying to register the commands');
   }
-
-  const commands = loadCommands();
 
   const player = new Player(client);
 
