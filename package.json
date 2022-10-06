@@ -6,10 +6,8 @@
   "scripts": {
     "dev": "nodemon -r dotenv/config src/main.js",
     "start": "node -r dotenv/config  src/main.js",
-    "build": "tsc",
     "lint": "eslint . src/**/*.{ts,js} --fix",
-    "format": "prettier --config .prettierrc src/**/*.{ts,js} --write",
-    "typecheck": "tsc --noEmit"
+    "format": "prettier --config .prettierrc src/**/*.{ts,js} --write"
   },
   "repository": {
     "url": "https://github.com/Krysik/discord-music-bot"
@@ -24,7 +22,6 @@
     "ffmpeg-static": "^4.4.0",
     "pino": "^7.6.1",
     "pino-pretty": "^7.3.0",
-    "tsconfig-paths": "^4.0.0",
     "youtube-sr": "^4.1.15"
   },
   "devDependencies": {

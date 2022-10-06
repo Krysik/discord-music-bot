@@ -50,6 +50,7 @@ async function setupBot() {
     const commandLogger = logger.child({
       executor: user.username,
       commandName,
+      channelId: interaction.channelId,
     });
 
     const queue = player.createQueue(interaction.guild, {
@@ -71,12 +72,9 @@ async function setupBot() {
       });
     } catch (err) {
       console.log(err);
-      logger.error(
+      commandLogger.error(
         {
           error: err,
-          commandName: commandName,
-          username: interaction.user.username,
-          channelId: interaction.member.voice.channelId,
         },
         `error when trying to execute the command "${commandName}"`
       );

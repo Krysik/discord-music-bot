@@ -6,7 +6,7 @@ COPY package*.json ./
 RUN apk update && apk add --update python3
 ENV NODE_ENV=production
 
-RUN npm install
+RUN npm ci --no-audit
 COPY . .
 
 USER node
