@@ -70,6 +70,7 @@ async function setupBot() {
         queue,
       });
     } catch (err) {
+      console.log(err);
       logger.error(
         {
           error: err,
@@ -77,7 +78,7 @@ async function setupBot() {
           username: interaction.user.username,
           channelId: interaction.member.voice.channelId,
         },
-        `error when trying to execute the command ${commandName}`
+        `error when trying to execute the command "${commandName}"`
       );
       queue.destroy();
       await interaction.reply({
