@@ -18,10 +18,13 @@ async function setupBot() {
   });
   const commands = loadCommands();
   try {
+    const commandsData = getCommandsData(commands);
     await rest.put(Routes.applicationGuildCommands(DC_CLIENT_ID, DC_GUILD_ID), {
-      body: getCommandsData(),
+      body: commandsData,
     });
-    logger.info('Successfully registered application commands.');
+    logger.info(
+      `Successfully registered application ${commandsData.length} commands`
+    );
   } catch (err) {
     logger.error({ error: err }, 'error when trying to register the commands');
   }
