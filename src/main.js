@@ -3,6 +3,7 @@ const logger = require('./logger');
 
 async function main() {
   try {
+    logger.info('Starting the bot');
     await setupBot();
   } catch (err) {
     console.log(err);
