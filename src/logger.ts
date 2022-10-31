@@ -1,7 +1,11 @@
-const pino = require('pino');
+import pino from 'pino';
+
+type Logger = typeof logger;
+
+export { logger };
+export type { Logger };
 
 const env = process.env.NODE_ENV || 'production';
-
 const logger = pino({
   level: env === 'development' ? 'debug' : 'warn',
   ...(env !== 'production' && {
@@ -13,5 +17,3 @@ const logger = pino({
     },
   }),
 });
-
-module.exports = logger;

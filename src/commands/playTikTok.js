@@ -1,5 +1,5 @@
 const https = require('https');
-
+// TODO: adjust for typescript
 function fetchTikTokVideo({ logger }) {
   return ({ videoUrl }) => {
     return new Promise((resolve, reject) => {
