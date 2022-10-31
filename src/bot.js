@@ -1,17 +1,21 @@
 const { DC_TOKEN, DC_CLIENT_ID, DC_GUILD_ID } = process.env;
-const { Client: DcClient, GatewayIntentBits, REST } = require('discord.js');
+const {
+  Client: DcClient,
+  Events,
+  GatewayIntentBits,
+  REST,
+} = require('discord.js');
 const { Player } = require('discord-player');
 const { Routes } = require('discord-api-types/v9');
 const { loadCommands, getCommandsData } = require('./loadCommands');
 const logger = require('./logger');
 
-const rest = new REST({ version: '9' }).setToken(DC_TOKEN);
+const rest = new REST({ version: '10' }).setToken(DC_TOKEN);
 
 async function setupBot() {
   const client = new DcClient({
     intents: [
       GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMembers,
       GatewayIntentBits.GuildMessages,
       GatewayIntentBits.GuildVoiceStates,
     ],
@@ -40,8 +44,12 @@ async function setupBot() {
 		`);
   });
 
-  client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) return;
+  client.once(Events.ClientReady, () => {
+    logger.info('The bot is ready');
+  });
+
+  client.on(Events.InteractionCreate, async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
 
     const { commandName, user } = interaction;
     const cmd = commands.get(commandName);
@@ -57,13 +65,17 @@ async function setupBot() {
       metadata: {
         channel: interaction.channel,
       },
+      leaveOnEnd: true,
+      leaveOnEmpty: true,
+      leaveOnStop: true,
     });
+    queue.clear();
 
     try {
       if (!queue.connection) {
         await queue.connect(interaction.member.voice.channel);
       }
-      commandLogger.info('invoking a command');
+      await interaction.deferReply({ ephemeral: true });
       await cmd.execute({
         interaction,
         player,
@@ -78,7 +90,8 @@ async function setupBot() {
         },
         `error when trying to execute the command "${commandName}"`
       );
-      queue.destroy();
+      const disconnect = true;
+      queue.destroy(disconnect);
       await interaction.reply({
         content: `Error occured during calling ${commandName} command`,
         ephemeral: true,
@@ -86,6 +99,9 @@ async function setupBot() {
     }
   });
   await client.login(DC_TOKEN);
+  process.on('SIGINT', () => {
+    client.destroy();
+  });
 }
 
 module.exports = { setupBot };
