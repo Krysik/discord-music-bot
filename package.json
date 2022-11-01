@@ -7,8 +7,7 @@
     "start": "ts-node-dev -r dotenv/config -r tsconfig-paths/register src/main.ts",
     "build": "tsc",
     "lint": "eslint . src/**/*.{ts,js} --fix",
-    "format": "prettier --config .prettierrc src/**/*.{ts,js} --write",
-    "typecheck": "tsc --noEmit"
+    "format": "prettier --config .prettierrc src/**/*.{ts,js} --write"
   },
   "repository": {
     "url": "https://github.com/Krysik/discord-music-bot"
@@ -16,6 +15,7 @@
   "author": "Marcin Krysiński <marcin_krysinski@outlook.com>",
   "license": "ISC",
   "dependencies": {
+    "@discordjs/opus": "^0.8.0",
     "discord-api-types": "^0.25.2",
     "discord-player": "^5.3.1",
     "discord.js": "^14.4.0",
@@ -23,7 +23,6 @@
     "ffmpeg-static": "^5.1.0",
     "pino": "^7.6.1",
     "pino-pretty": "^7.3.0",
-    "tsconfig-paths": "^4.0.0",
     "youtube-sr": "^4.1.15"
   },
   "devDependencies": {
