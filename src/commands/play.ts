@@ -18,8 +18,8 @@ function getTrack(player: Player) {
       url: video.url,
       raw: video,
       thumbnail: '',
-      duration: '',
-      views: 0,
+      duration: String(video.duration),
+      views: video.views,
     });
   };
 }
@@ -38,6 +38,7 @@ const PlayCommand: DiscordCommand = {
   async execute({ interaction, queue, logger }) {
     const isRequired = true;
     const url = interaction.options.getString('url', isRequired);
+    await interaction.deferReply();
 
     const track = await getTrack(queue.player)({
       url,
@@ -45,7 +46,6 @@ const PlayCommand: DiscordCommand = {
     });
 
     try {
-      await interaction.deferReply();
       await queue.play(track);
     } catch (err) {
       console.log(err);
@@ -53,9 +53,11 @@ const PlayCommand: DiscordCommand = {
     }
 
     return interaction.editReply({
-      content: `Playing the **${track.title}**`,
+      content: `
+        🎶 | Playing the **${track.title}**\n
+        Requested by: ${interaction.user.username}\n
+        URL: ${url}
+      `,
     });
   },
 };
-
-// function play({ queue }: { queue:  })

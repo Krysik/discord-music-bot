@@ -5,17 +5,15 @@ import {
   Guild,
   REST,
 } from 'discord.js';
-import { Player } from 'discord-player';
+import { Player, Queue } from 'discord-player';
 import { Routes } from 'discord-api-types/v9';
-import type { Logger } from './logger';
+import { logger, Logger } from './logger';
 import {
   buildApplicationCommandsJsonBody,
   buildCommandsMap,
 } from './loadCommands';
 
 export { setupBot };
-
-// const { loadCommands, getCommandsData } = require('./loadCommands');
 
 async function setupBot({ logger }: { logger: Logger }) {
   const { DC_TOKEN } = validateDiscordEnvs();
@@ -30,7 +28,13 @@ async function setupBot({ logger }: { logger: Logger }) {
   const commands = buildCommandsMap();
   registerSlashCommands({ logger });
 
-  const player = new Player(client);
+  client.on(Events.ClientReady, () => {
+    logger.info('The bot is ready');
+  });
+
+  const player = new Player(client, {
+    ytdlOptions: { filter: 'audioonly' },
+  });
 
   client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
@@ -54,14 +58,15 @@ async function setupBot({ logger }: { logger: Logger }) {
     const queue = player.createQueue(interaction.guild as Guild, {
       leaveOnEmpty: true,
       leaveOnEnd: true,
-      metadata: { channel: interaction.channelId },
     });
 
     try {
       if (!queue.connection) {
+        // TODO: fix types
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         await queue.connect(interaction.member.voice.channel);
+        queue.clear();
       }
     } catch (err) {
       queue.destroy();
@@ -73,7 +78,7 @@ async function setupBot({ logger }: { logger: Logger }) {
     }
 
     try {
-      commandLogger.info('invoking a command');
+      commandLogger.info('Invoking a command');
       await command.execute(
         {
           interaction,
@@ -91,14 +96,9 @@ async function setupBot({ logger }: { logger: Logger }) {
       });
     }
   });
-  // player.on('trackStart', (queue, { title, requestedBy: { username } }) => {
-  //   const { url } = queue.current;
-  //   return queue.metadata.channel.send(`
-  // 		🎶 | Now playing **${title}**!\n
-  // 		Requested by: ${username}\n
-  // 		URL: ${url}
-  // 	`);
-  // });
+
+  player.on('error', handlePlayerError);
+  player.on('connectionError', handlePlayerError);
 
   await client.login(DC_TOKEN);
   process.on('SIGINT', () => {
@@ -144,4 +144,12 @@ async function registerSlashCommands({ logger }: { logger: Logger }) {
 
     logger.error({ error: err }, 'error when trying to register the commands');
   }
+}
+
+function handlePlayerError(queue: Queue<unknown>, err: Error) {
+  if (!queue.destroyed) {
+    const disconnect = true;
+    queue.destroy(disconnect);
+  }
+  logger.error({ err }, 'Discord player error occurred');
 }
