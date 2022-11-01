@@ -16,6 +16,4 @@ I keeps every command in the `commands` directory.
 
 ### Available scripts
 
-- `npm start` - starts the node app without live reload
-- `npm run dev` - starts the node app with live reload
-
+- `npm start` - starts the node app with live reload
