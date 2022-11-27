@@ -48,8 +48,8 @@ const PlayCommand: DiscordCommand = {
     try {
       await queue.play(track);
     } catch (err) {
-      console.log(err);
-      logger.error('Play error');
+      logger.error({ err }, 'Play error');
+      throw err;
     }
 
     return interaction.editReply({

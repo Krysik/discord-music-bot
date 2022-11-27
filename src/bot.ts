@@ -1,10 +1,4 @@
-import {
-  Client as DcClient,
-  Events,
-  GatewayIntentBits,
-  Guild,
-  REST,
-} from 'discord.js';
+import { Client as DcClient, Events, Guild, REST } from 'discord.js';
 import { Player, Queue } from 'discord-player';
 import { Routes } from 'discord-api-types/v9';
 import { logger, Logger } from './logger';
@@ -13,30 +7,23 @@ import {
   buildCommandsMap,
 } from './loadCommands';
 
-export { setupBot };
+export { runBot };
 
-async function setupBot({ logger }: { logger: Logger }) {
-  const { DC_TOKEN } = validateDiscordEnvs();
-  const client = new DcClient({
-    intents: [
-      GatewayIntentBits.Guilds,
-      GatewayIntentBits.GuildMembers,
-      GatewayIntentBits.GuildMessages,
-      GatewayIntentBits.GuildVoiceStates,
-    ],
-  });
+type BotDeps = {
+  logger: Logger;
+  dcClient: DcClient;
+  player: Player;
+};
+
+async function runBot({ dcClient, logger, player }: BotDeps) {
   const commands = buildCommandsMap();
-  registerSlashCommands({ logger });
+  registerSlashCommands({ logger }, { commands });
 
-  client.on(Events.ClientReady, () => {
+  dcClient.on(Events.ClientReady, () => {
     logger.info('The bot is ready');
   });
 
-  const player = new Player(client, {
-    ytdlOptions: { filter: 'audioonly' },
-  });
-
-  client.on(Events.InteractionCreate, async (interaction) => {
+  dcClient.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, user } = interaction;
@@ -99,11 +86,6 @@ async function setupBot({ logger }: { logger: Logger }) {
 
   player.on('error', handlePlayerError);
   player.on('connectionError', handlePlayerError);
-
-  await client.login(DC_TOKEN);
-  process.on('SIGINT', () => {
-    client.destroy();
-  });
 }
 
 function validateDiscordEnvs() {
@@ -122,8 +104,10 @@ function validateDiscordEnvs() {
   };
 }
 
-async function registerSlashCommands({ logger }: { logger: Logger }) {
-  const commands = buildCommandsMap();
+async function registerSlashCommands(
+  { logger }: { logger: Logger },
+  { commands }: { commands: ReturnType<typeof buildCommandsMap> }
+) {
   const { DC_CLIENT_ID, DC_GUILD_ID, DC_TOKEN } = validateDiscordEnvs();
   const rest = new REST({ version: '10' }).setToken(DC_TOKEN);
 
@@ -140,9 +124,8 @@ async function registerSlashCommands({ logger }: { logger: Logger }) {
       } application commands.`
     );
   } catch (err) {
-    console.log(err);
-
     logger.error({ error: err }, 'error when trying to register the commands');
+    throw err;
   }
 }
 
