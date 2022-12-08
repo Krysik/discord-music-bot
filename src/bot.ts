@@ -1,4 +1,4 @@
-import { Client as DcClient, Events, Guild, REST } from 'discord.js';
+import { Client as DiscordClient, Events, Guild, REST } from 'discord.js';
 import { Player, Queue } from 'discord-player';
 import { Routes } from 'discord-api-types/v9';
 import { logger, Logger } from './logger';
@@ -11,19 +11,19 @@ export { runBot };
 
 type BotDeps = {
   logger: Logger;
-  dcClient: DcClient;
+  discord: DiscordClient;
   player: Player;
 };
 
-async function runBot({ dcClient, logger, player }: BotDeps) {
+async function runBot({ discord, logger, player }: BotDeps) {
   const commands = buildCommandsMap();
   registerSlashCommands({ logger }, { commands });
 
-  dcClient.on(Events.ClientReady, () => {
+  discord.on(Events.ClientReady, () => {
     logger.info('The bot is ready');
   });
 
-  dcClient.on(Events.InteractionCreate, async (interaction) => {
+  discord.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, user } = interaction;
@@ -35,6 +35,7 @@ async function runBot({ dcClient, logger, player }: BotDeps) {
 
     const command = commands.get(commandName);
     if (!command) {
+      commandLogger.warn('Command not found');
       await interaction.reply({
         content: 'Command not found',
         ephemeral: true,

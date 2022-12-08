@@ -1,10 +1,10 @@
 import { Player } from 'discord-player';
-import { Client as DcClient, GatewayIntentBits } from 'discord.js';
+import { Client as DiscordClient, GatewayIntentBits } from 'discord.js';
 import { runBot } from './bot';
 import { logger } from './logger';
 
 async function main() {
-  const client = new DcClient({
+  const discord = new DiscordClient({
     intents: [
       GatewayIntentBits.Guilds,
       GatewayIntentBits.GuildMembers,
@@ -13,7 +13,7 @@ async function main() {
     ],
   });
 
-  const player = new Player(client, {
+  const player = new Player(discord, {
     ytdlOptions: { filter: 'audioonly' },
   });
 
@@ -22,10 +22,10 @@ async function main() {
     throw new Error('The "DC_TOKEN" env is not present');
   }
 
-  await client.login(DC_TOKEN);
+  await discord.login(DC_TOKEN);
   try {
     await runBot({
-      dcClient: client,
+      discord: discord,
       logger,
       player,
     });
@@ -35,7 +35,7 @@ async function main() {
   }
 
   process.on('SIGINT', () => {
-    client.destroy();
+    discord.destroy();
   });
 }
 
