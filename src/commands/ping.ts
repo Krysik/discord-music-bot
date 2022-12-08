@@ -9,8 +9,6 @@ const PingCommand: DiscordCommand = {
     .setDescription('Pings the bot'),
 
   execute: ({ interaction }) => {
-    return interaction.reply({
-      content: 'Pong!',
-    });
+    return interaction.reply({ content: 'Pong!' });
   },
 };
