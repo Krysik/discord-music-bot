@@ -23,6 +23,7 @@ const HelpCommand: DiscordCommand = {
             description: optionDescription,
             required,
           } = option.toJSON();
+
           message += `
             - **${optionName}** (required: ${
             required ? 'Yes' : 'No'

@@ -35,7 +35,7 @@ const PlayCommand: DiscordCommand = {
     )
     .setDescription('Plays a track'),
 
-  async execute({ interaction, queue, logger }) {
+  async execute({ interaction, queue }) {
     const isRequired = true;
     const url = interaction.options.getString('url', isRequired);
     await interaction.deferReply();
@@ -45,12 +45,7 @@ const PlayCommand: DiscordCommand = {
       requestedBy: interaction.user,
     });
 
-    try {
-      await queue.play(track);
-    } catch (err) {
-      logger.error({ err }, 'Play error');
-      throw err;
-    }
+    await queue.play(track);
 
     return interaction.editReply({
       content: `

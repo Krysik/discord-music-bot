@@ -1,4 +1,4 @@
-import { Player } from 'discord-player';
+import { Player as DiscordPlayer } from 'discord-player';
 import { Client as DiscordClient, GatewayIntentBits } from 'discord.js';
 import { runBot } from './bot';
 import { logger } from './logger';
@@ -13,7 +13,7 @@ async function main() {
     ],
   });
 
-  const player = new Player(discord, {
+  const player = new DiscordPlayer(discord, {
     ytdlOptions: { filter: 'audioonly' },
   });
 

@@ -1,5 +1,5 @@
 import { Client as DiscordClient, Events, Guild, REST } from 'discord.js';
-import { Player, Queue } from 'discord-player';
+import { Player as DiscordPlayer, Queue } from 'discord-player';
 import { Routes } from 'discord-api-types/v9';
 import { logger, Logger } from './logger';
 import {
@@ -12,7 +12,7 @@ export { runBot };
 type BotDeps = {
   logger: Logger;
   discord: DiscordClient;
-  player: Player;
+  player: DiscordPlayer;
 };
 
 async function runBot({ discord, logger, player }: BotDeps) {
@@ -112,28 +112,24 @@ async function registerSlashCommands(
   const { DC_CLIENT_ID, DC_GUILD_ID, DC_TOKEN } = validateDiscordEnvs();
   const rest = new REST({ version: '10' }).setToken(DC_TOKEN);
 
-  try {
-    const response = await rest.put(
-      Routes.applicationGuildCommands(DC_CLIENT_ID, DC_GUILD_ID),
-      {
-        body: buildApplicationCommandsJsonBody(commands),
-      }
-    );
-    logger.info(
-      `Successfully registered ${
-        (response as { length: number }).length
-      } application commands.`
-    );
-  } catch (err) {
-    logger.error({ error: err }, 'error when trying to register the commands');
-    throw err;
-  }
+  const response = await rest.put(
+    Routes.applicationGuildCommands(DC_CLIENT_ID, DC_GUILD_ID),
+    {
+      body: buildApplicationCommandsJsonBody(commands),
+    }
+  );
+  logger.info(
+    `Successfully registered ${
+      (response as { length: number }).length
+    } application commands.`
+  );
 }
 
 function handlePlayerError(queue: Queue<unknown>, err: Error) {
   if (!queue.destroyed) {
     const disconnect = true;
     queue.destroy(disconnect);
+    return;
   }
   logger.error({ err }, 'Discord player error occurred');
 }
