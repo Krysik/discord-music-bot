@@ -1,13 +1,18 @@
-# JSMusic Bot
+# Discord Music Bot
 
-I keeps every command in the `commands` directory.
+Prerequisites:
+
+- set up bot application in the [discord console](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot)
+- add bot to your server [doc reference](https://discordjs.guide/preparations/adding-your-bot-to-servers.html)
+
+I keep each command in the `src/commands` directory.
 
 - `/play <URL>` - plays a song, the url can be a YT / spotify / soundcloud link
 - `/stop` - stops playing a song
 - `/pause` - pauses a song
 - `/help` - displays available commands
 
-### Environment variable
+### Environment variables
 
 - `DC_GUILD_ID` - The id of your discord server
 - `DC_TOKEN` - The token of your bot
