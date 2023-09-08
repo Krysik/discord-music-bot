@@ -67,14 +67,11 @@ async function runBot({ discord, logger, player }: BotDeps) {
 
     try {
       commandLogger.info('Invoking a command');
-      await command.execute(
-        {
-          interaction,
-          logger: commandLogger,
-          queue,
-        },
-        {}
-      );
+      await command.execute({
+        interaction,
+        logger: commandLogger,
+        queue,
+      });
     } catch (err) {
       commandLogger.error({ err }, 'Command error');
       queue.destroy();

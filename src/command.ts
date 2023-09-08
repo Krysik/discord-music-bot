@@ -14,14 +14,9 @@ type DiscordCommandDeps = {
   logger: Logger;
 };
 
-type CommandArgs = {
-  url?: string;
-};
-
 export interface DiscordCommand {
   data: SlashCommandBuilder;
   execute: (
-    deps: DiscordCommandDeps,
-    args: CommandArgs
+    deps: DiscordCommandDeps
   ) => Promise<InteractionResponse<boolean> | Message<boolean>>;
 }
