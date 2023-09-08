@@ -1,4 +1,4 @@
-import { Client as DiscordClient, Events, Guild, REST } from 'discord.js';
+import { Client as DiscordClient, Events, REST } from 'discord.js';
 import { Player as DiscordPlayer, Queue } from 'discord-player';
 import { Routes } from 'discord-api-types/v9';
 import { logger, Logger } from './logger';
@@ -6,6 +6,7 @@ import {
   buildApplicationCommandsJsonBody,
   buildCommandsMap,
 } from './loadCommands';
+import { createPlayerQueue, ChatInputCommandWithGuild } from './playerQueue';
 
 export { runBot };
 
@@ -32,10 +33,9 @@ async function runBot({ discord, logger, player }: BotDeps) {
       requestedBy: user.username,
       commandName,
     });
-
     const command = commands.get(commandName);
+
     if (!command) {
-      commandLogger.warn('Command not found');
       await interaction.reply({
         content: 'Command not found',
         ephemeral: true,
@@ -43,27 +43,15 @@ async function runBot({ discord, logger, player }: BotDeps) {
       return;
     }
 
-    const queue = player.createQueue(interaction.guild as Guild, {
-      leaveOnEmpty: true,
-      leaveOnEnd: true,
-    });
+    if (!interaction.guild) return;
 
-    try {
-      if (!queue.connection) {
-        // TODO: fix types
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        await queue.connect(interaction.member.voice.channel);
-        queue.clear();
+    const queue = await createPlayerQueue(
+      { player },
+      {
+        interaction: interaction as ChatInputCommandWithGuild,
       }
-    } catch (err) {
-      queue.destroy();
-      await interaction.reply({
-        content: 'Could not join a voice channel',
-        ephemeral: true,
-      });
-      return;
-    }
+    );
+    if (!queue) return;
 
     try {
       commandLogger.info('Invoking a command');
@@ -95,11 +83,7 @@ function validateDiscordEnvs() {
     );
   }
 
-  return {
-    DC_TOKEN,
-    DC_CLIENT_ID,
-    DC_GUILD_ID,
-  };
+  return { DC_TOKEN, DC_CLIENT_ID, DC_GUILD_ID };
 }
 
 async function registerSlashCommands(
