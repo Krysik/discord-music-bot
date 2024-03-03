@@ -24,6 +24,10 @@ async function runBot({ discord, logger, player }: BotDeps) {
     logger.info('The bot is ready');
   });
 
+  process.on('SIGINT', () => {
+    discord.destroy();
+  });
+
   discord.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
