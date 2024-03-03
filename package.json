@@ -23,7 +23,7 @@
     "ffmpeg-static": "^5.1.0",
     "pino": "^7.6.1",
     "pino-pretty": "^7.3.0",
-    "youtube-sr": "^4.1.15"
+    "youtube-sr": "^4.3.10"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
