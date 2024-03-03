@@ -1,5 +1,5 @@
-import { Client as DiscordClient, Events, REST } from 'discord.js';
-import { Player as DiscordPlayer, Queue } from 'discord-player';
+import { Client as DiscordClient, Events, Interaction, REST } from 'discord.js';
+import { Player as DiscordPlayer, Player, Queue } from 'discord-player';
 import { Routes } from 'discord-api-types/v9';
 import { logger, Logger } from './logger';
 import {
@@ -7,6 +7,7 @@ import {
   buildCommandsMap,
 } from './loadCommands';
 import { createPlayerQueue, ChatInputCommandWithGuild } from './playerQueue';
+import { DiscordCommand } from './command';
 
 export { runBot };
 
@@ -26,9 +27,33 @@ async function runBot({ discord, logger, player }: BotDeps) {
 
   process.on('SIGINT', () => {
     discord.destroy();
+
+    const disconnect = true;
+    for (const queue of player.queues.values()) {
+      queue.destroy(disconnect);
+    }
   });
 
-  discord.on(Events.InteractionCreate, async (interaction) => {
+  discord.on(
+    Events.InteractionCreate,
+    handleInteractionCreateEvent({
+      commands,
+      player,
+    })
+  );
+
+  player.on('error', handlePlayerError);
+  player.on('connectionError', handlePlayerError);
+}
+
+function handleInteractionCreateEvent({
+  player,
+  commands,
+}: {
+  player: Player;
+  commands: Map<string, DiscordCommand>;
+}) {
+  return async (interaction: Interaction) => {
     if (!interaction.isChatInputCommand()) return;
 
     const { commandName, user } = interaction;
@@ -72,10 +97,7 @@ async function runBot({ discord, logger, player }: BotDeps) {
         ephemeral: true,
       });
     }
-  });
-
-  player.on('error', handlePlayerError);
-  player.on('connectionError', handlePlayerError);
+  };
 }
 
 function validateDiscordEnvs() {
