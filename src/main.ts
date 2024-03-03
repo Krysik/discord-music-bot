@@ -25,7 +25,7 @@ async function main() {
   await discord.login(DC_TOKEN);
   try {
     await runBot({
-      discord: discord,
+      discord,
       logger,
       player,
     });
