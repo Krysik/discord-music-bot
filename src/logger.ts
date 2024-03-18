@@ -7,7 +7,7 @@ export type { Logger };
 
 const env = process.env.NODE_ENV || 'production';
 const logger = pino({
-  level: env === 'development' ? 'debug' : 'warn',
+  level: process.env.LOG_LEVEL ?? 'info',
   ...(env !== 'production' && {
     transport: {
       target: 'pino-pretty',
