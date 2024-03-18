@@ -1,6 +1,6 @@
 import { Client as DiscordClient, Events, Interaction, REST } from 'discord.js';
 import { Player as DiscordPlayer, Player, Queue } from 'discord-player';
-import { Routes } from 'discord-api-types/v9';
+import { Routes } from 'discord-api-types/v10';
 import { logger, Logger } from './logger';
 import {
   buildApplicationCommandsJsonBody,
@@ -36,7 +36,7 @@ async function runBot({ discord, logger, player }: BotDeps) {
 
   discord.on(
     Events.InteractionCreate,
-    handleInteractionCreateEvent({
+    createInteractionCreateEventHandler({
       commands,
       player,
     })
@@ -46,7 +46,7 @@ async function runBot({ discord, logger, player }: BotDeps) {
   player.on('connectionError', handlePlayerError);
 }
 
-function handleInteractionCreateEvent({
+function createInteractionCreateEventHandler({
   player,
   commands,
 }: {
