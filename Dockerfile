@@ -1,8 +1,8 @@
-FROM node:16.18-alpine3.16 as base
+FROM node:18.19.1-alpine3.19 as base
 
 WORKDIR /opt/app
 COPY package.json package-lock.json ./
-# RUN apk update && apk add --update python3
+RUN apk update && apk add --update python3
 RUN chown -R node:node /opt/app
 USER node
 

@@ -134,6 +134,7 @@ async function registerSlashCommands(
 
 function handlePlayerError(queue: Queue<unknown>, err: Error) {
   logger.error({ err }, 'Discord player error occurred');
+
   if (!queue.destroyed) {
     const disconnect = true;
     queue.destroy(disconnect);
