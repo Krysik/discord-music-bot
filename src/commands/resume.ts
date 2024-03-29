@@ -9,7 +9,13 @@ const ResumeCommand: DiscordCommand = {
     .setDescription('Resumes paused track'),
 
   execute: ({ interaction, queue }) => {
-    queue.setPaused(false);
-    return interaction.reply({ content: 'Track has been resumed' });
+    if (queue.playing) {
+      queue.setPaused(false);
+      return interaction.reply({ content: 'Track has been resumed' });
+    }
+    return interaction.reply({
+      content: 'Nothing is playing',
+      ephemeral: true,
+    });
   },
 };

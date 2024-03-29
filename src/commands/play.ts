@@ -1,5 +1,5 @@
 import { Player, Track } from 'discord-player';
-import { SlashCommandBuilder, User } from 'discord.js';
+import { GuildMember, SlashCommandBuilder, User } from 'discord.js';
 import { DiscordCommand } from '../command';
 import { YouTube } from 'youtube-sr';
 import { Logger } from '../logger';
@@ -44,7 +44,22 @@ const PlayCommand: DiscordCommand = {
   async execute({ interaction, queue, logger }) {
     const isRequired = true;
     const url = interaction.options.getString('url', isRequired);
+
+    const cmdInitiator = interaction.member as GuildMember;
+
+    if (!cmdInitiator.voice.channel) {
+      logger.warn({ cmdInitiator }, 'User is not in a voice channel');
+      return interaction.reply({
+        content: 'You must be in a voice channel to use this command',
+        ephemeral: true,
+      });
+    }
+
     await interaction.deferReply();
+
+    if (!queue.connection) {
+      await queue.connect(cmdInitiator.voice.channel);
+    }
 
     const track = await getTrack({ player: queue.player, logger })({
       url,

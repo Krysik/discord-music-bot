@@ -26,8 +26,6 @@ async function runBot({ discord, logger, player }: BotDeps) {
   });
 
   process.on('SIGINT', () => {
-    discord.destroy();
-
     const disconnect = true;
     for (const queue of player.queues.values()) {
       queue.destroy(disconnect);
@@ -74,13 +72,12 @@ function createInteractionCreateEventHandler({
 
     if (!interaction.guild) return;
 
-    const queue = await createPlayerQueue(
+    const queue = createPlayerQueue(
       { player },
       {
         interaction: interaction as ChatInputCommandWithGuild,
       }
     );
-    if (!queue) return;
 
     try {
       commandLogger.info('Invoking a command');
@@ -91,11 +88,15 @@ function createInteractionCreateEventHandler({
       });
     } catch (err) {
       commandLogger.error({ err }, 'Command error');
-      queue.destroy();
-      await interaction.reply({
-        content: `There was an error while executing the "${commandName}" command!`,
-        ephemeral: true,
-      });
+      if (interaction.deferred) {
+        await interaction.editReply({
+          content: `There was an error while executing the "${commandName}" command!`,
+        });
+      } else {
+        await interaction.reply({
+          content: `There was an error while executing the "${commandName}" command!`,
+        });
+      }
     }
   };
 }

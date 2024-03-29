@@ -13,6 +13,10 @@ async function main() {
     ],
   });
 
+  process.on('SIGINT', () => {
+    discord.destroy();
+  });
+
   const player = new DiscordPlayer(discord, {
     ytdlOptions: { filter: 'audioonly' },
   });
@@ -33,10 +37,6 @@ async function main() {
     logger.fatal({ err }, 'fatal error, the app has been stopped');
     process.exit(1);
   }
-
-  process.on('SIGINT', () => {
-    discord.destroy();
-  });
 }
 
 main();
