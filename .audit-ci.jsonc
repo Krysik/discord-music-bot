@@ -2,5 +2,6 @@
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "report-type": "summary",
   "output-format": "json",
+  "low": true,
   "allowlist": []
 }
