@@ -1,0 +1,60 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Cache node_modules
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install dependencies
+        # check if cache-hit happened then do not execute npm ci
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: npm ci --no-audit
+
+      - name: Audit dependencies
+        run: npx audit-ci@^7 --config ./.audit-ci.jsonc
+
+      - name: Run tests
+        run: npm run test --if-present
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check types
+        run: npm run typecheck
+
+  # deploy:
+  #   if: github.event_name == 'push' && github.ref_name == 'master'
+  #   needs: [build]
+  #   runs-on: ubuntu-20.04
+
+  #   steps:
+  #     - uses: actions/checkout@v3
+
+  #     - name: Run container
+  #       uses: appleboy/ssh-action@master
+  #       with:
+  #         host: ${{ secrets.HOST }}
+  #         username: ${{ secrets.USERNAME }}
+  #         key: ${{ secrets.PRIVATE_KEY }}
+  #         port: 22

@@ -6,8 +6,8 @@
   "scripts": {
     "start": "ts-node-dev -r dotenv/config src/main.ts",
     "build": "tsc",
-    "lint": "eslint . src/**/*.{ts,js} --fix",
-    "format": "prettier --config .prettierrc src/**/*.{ts,js} --write"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . src/**/*.{ts,js}"
   },
   "repository": {
     "url": "https://github.com/Krysik/discord-music-bot"
