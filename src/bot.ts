@@ -19,7 +19,7 @@ type BotDeps = {
 
 async function runBot({ discord, logger, player }: BotDeps) {
   const commands = buildCommandsMap();
-  registerSlashCommands({ logger }, { commands });
+  await registerSlashCommands({ logger }, { commands });
 
   discord.on(Events.ClientReady, () => {
     logger.info('The bot is ready');
