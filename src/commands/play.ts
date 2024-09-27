@@ -43,7 +43,6 @@ const PlayCommand: DiscordCommand = {
 
   async execute({ interaction, queue, logger }) {
     const isRequired = true;
-    const url = interaction.options.getString('url', isRequired);
 
     const cmdInitiator = interaction.member as GuildMember;
 
@@ -61,6 +60,7 @@ const PlayCommand: DiscordCommand = {
       await queue.connect(cmdInitiator.voice.channel);
     }
 
+    const url = interaction.options.getString('url', isRequired);
     const track = await getTrack({ player: queue.player, logger })({
       url,
       requestedBy: interaction.user,
