@@ -1,12 +1,12 @@
-import { Queue } from 'discord-player';
-import {
+import type { Queue } from 'discord-player';
+import type {
   CacheType,
   ChatInputCommandInteraction,
   InteractionResponse,
   Message,
   SlashCommandBuilder,
 } from 'discord.js';
-import { Logger } from './logger';
+import type { Logger } from './logger';
 
 type DiscordCommandDeps = {
   queue: Queue;
