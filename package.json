@@ -9,8 +9,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . src/**/*.{ts,js}",
     "audit": "npx audit-ci@^7 --config ./.audit-ci.jsonc",
-    "test": "vitest --watch=false",
-    "test:watch": "vitest"
+    "test": "vitest run --config ./src/test/vitest.config.ts",
+    "test:watch": "vitest --config ./src/test/vitest.config.ts"
   },
   "repository": {
     "url": "https://github.com/Krysik/discord-music-bot"
