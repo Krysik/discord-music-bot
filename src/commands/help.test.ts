@@ -11,8 +11,6 @@ describe('help command', () => {
       },
     } as any);
 
-    console.log(replyMock.mock.calls);
-
     expect(replyMock).toBeCalledWith({
       content:
         'Available commands\n' +
