@@ -19,10 +19,12 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'prettier/prettier': 2,
   },
-  overrides: {
-    files: ['*.test.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+  overrides: [
+    {
+      files: ['*.test.ts'],
+      rules: {
+        '@typescript-eslint/no-explicit-any': 'off',
+      },
     },
-  },
+  ],
 };
