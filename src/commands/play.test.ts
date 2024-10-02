@@ -134,6 +134,9 @@ describe('play command', () => {
 
     expect(editReplyMock).toBeCalledWith({
       content: `Track not found for a given URL\n${trackUrl}`,
+      options: {
+        ephemeral: true,
+      },
     });
     expect(queueConnectMock).not.toBeCalled();
     expect(playMock).not.toBeCalled();

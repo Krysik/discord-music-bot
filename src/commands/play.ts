@@ -78,6 +78,9 @@ const PlayCommand: DiscordCommand = {
 
     return interaction.editReply({
       content: `Track not found for a given URL\n${url}`,
+      options: {
+        ephemeral: true,
+      },
     });
   },
 };
