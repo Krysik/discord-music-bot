@@ -1,9 +1,14 @@
-FROM node:16.18-alpine3.16 as base
+FROM node:18.20-alpine3.19 as base
 
 WORKDIR /opt/app
 COPY package.json package-lock.json ./
 RUN chown -R node:node /opt/app
-USER node
+
+RUN apk update && apk add python3 make g++
+RUN npm i node-pre-gyp@0.17.0 node-gyp@7.1.2
+
+# TODO: Fix permission issue [Error: EACCES: permission denied, rmdir '/opt/app/node_modules/.bin'] to use node user
+# USER node
 
 FROM base as build
 

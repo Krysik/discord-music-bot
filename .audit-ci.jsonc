@@ -3,5 +3,8 @@
   "report-type": "summary",
   "output-format": "text",
   "low": true,
-  "allowlist": []
+  "allowlist": [
+    // https://github.com/advisories/GHSA-43wq-xrcm-3vgr
+    "GHSA-43wq-xrcm-3vgr"
+  ]
 }

@@ -24,7 +24,7 @@ function getTrack({ player, logger }: { player: Player; logger: Logger }) {
         views: video.views,
       });
     } catch (err) {
-      logger.error({ err }, 'Error while getting track');
+      logger.error({ err }, 'Error while getting a track');
       return null;
     }
   };
@@ -43,7 +43,6 @@ const PlayCommand: DiscordCommand = {
 
   async execute({ interaction, queue, logger }) {
     const isRequired = true;
-    const url = interaction.options.getString('url', isRequired);
 
     const cmdInitiator = interaction.member as GuildMember;
 
@@ -57,16 +56,16 @@ const PlayCommand: DiscordCommand = {
 
     await interaction.deferReply();
 
-    if (!queue.connection) {
-      await queue.connect(cmdInitiator.voice.channel);
-    }
-
+    const url = interaction.options.getString('url', isRequired);
     const track = await getTrack({ player: queue.player, logger })({
       url,
       requestedBy: interaction.user,
     });
 
     if (track) {
+      if (!queue.connection) {
+        await queue.connect(cmdInitiator.voice.channel);
+      }
       await queue.play(track);
       return interaction.editReply({
         content: `
@@ -79,6 +78,9 @@ const PlayCommand: DiscordCommand = {
 
     return interaction.editReply({
       content: `Track not found for a given URL\n${url}`,
+      options: {
+        ephemeral: true,
+      },
     });
   },
 };

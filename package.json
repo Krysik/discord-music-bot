@@ -8,7 +8,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . src/**/*.{ts,js}",
-    "audit": "npx audit-ci@^7 --config ./.audit-ci.jsonc"
+    "audit": "npx audit-ci@^7 --config ./.audit-ci.jsonc",
+    "test": "vitest run --config ./src/test/vitest.config.ts",
+    "test:watch": "vitest --config ./src/test/vitest.config.ts"
   },
   "repository": {
     "url": "https://github.com/Krysik/discord-music-bot"
@@ -35,6 +37,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "prettier": "^2.5.1",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^4.8.4"
+    "typescript": "^4.8.4",
+    "vitest": "^2.1.1"
   }
 }
