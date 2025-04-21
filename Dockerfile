@@ -1,4 +1,4 @@
-FROM node:18.20-alpine3.19 as base
+FROM node:18.20-alpine3.19 AS base
 
 WORKDIR /opt/app
 COPY package.json package-lock.json ./
@@ -10,7 +10,7 @@ RUN npm i node-pre-gyp@0.17.0 node-gyp@7.1.2
 # TODO: Fix permission issue [Error: EACCES: permission denied, rmdir '/opt/app/node_modules/.bin'] to use node user
 # USER node
 
-FROM base as build
+FROM base AS build
 
 RUN npm ci --no-audit
 COPY --chown=node:node . ./
