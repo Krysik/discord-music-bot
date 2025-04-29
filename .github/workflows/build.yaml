@@ -47,40 +47,35 @@ jobs:
         run: npm run build
 
       - uses: twingate/github-action@v1.5
+        if: github.event_name == 'push' && github.ref_name == 'master'
         with:
           service-key: ${{ secrets.SERVICE_KEY }}
 
       - name: Copy files to the server
+        if: github.event_name == 'push' && github.ref_name == 'master'
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
           source: "./*"
-          target: "/home/${{ secrets.SSH_USERNAME }}/dcbot"
-          port: 22
+          target: "/home/${{ secrets.SSH_USERNAME }}/dcbot/app"
 
-  # deploy:
-  #   # if: github.event_name == 'push' && github.ref_name == 'master'
-  #   needs: [build]
-  #   runs-on: ubuntu-24.04
-
-  #   steps:
-  #     - uses: actions/checkout@v3
-
-  #     - name: Build the app
-  #       run: npm run build
-
-  #     - uses: twingate/github-action@v1
-  #       with:
-  #         service-key: ${{ secrets.SERVICE_KEY }}
-
-  #     - name: Run container
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.SSH_HOST }}
-  #         username: ${{ secrets.SSH_USERNAME }}
-  #         key: ${{ secrets.PRIVATE_KEY }}
-  #         port: 22
-  #         source: "build/**/*.js,build/**/*.js.map"
-  #         target: "~/dcbot"
+      - name: Run container
+        if: github.event_name == 'push' && github.ref_name == 'master'
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            cd ~/dcbot/app
+            if [ "$(docker ps -aq -f name=discord-bot)" ]; then
+              docker rm discord-bot --force
+            fi
+            # optionally remove the old image
+            if [ "$(docker images -q discord-bot:latest)" ]; then
+              docker rmi discord-bot:latest --force
+            fi
+            docker build -t discord-bot:latest .
+            docker run -d --name discord-bot --env-file ../.env discord-bot
