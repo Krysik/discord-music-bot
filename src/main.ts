@@ -1,5 +1,8 @@
 import { Player as DiscordPlayer } from 'discord-player';
 import { Client as DiscordClient, GatewayIntentBits } from 'discord.js';
+import { DefaultExtractors } from '@discord-player/extractor';
+import { YoutubeiExtractor } from 'discord-player-youtubei';
+
 import { runBot } from './bot';
 import { logger } from './logger';
 
@@ -17,9 +20,7 @@ async function main() {
     discord.destroy();
   });
 
-  const player = new DiscordPlayer(discord, {
-    ytdlOptions: { filter: 'audioonly' },
-  });
+  const player = new DiscordPlayer(discord);
 
   const DC_TOKEN = process.env.DC_TOKEN;
   if (!DC_TOKEN) {
@@ -27,6 +28,8 @@ async function main() {
   }
 
   await discord.login(DC_TOKEN);
+  await player.extractors.register(YoutubeiExtractor, {});
+
   try {
     await runBot({
       discord,

@@ -41,9 +41,8 @@ const PlayCommand: DiscordCommand = {
     )
     .setDescription('Plays a track'),
 
-  async execute({ interaction, queue, logger }) {
+  async execute({ interaction, queue, logger, player }) {
     const isRequired = true;
-
     const cmdInitiator = interaction.member as GuildMember;
 
     if (!cmdInitiator.voice.channel) {
@@ -66,7 +65,12 @@ const PlayCommand: DiscordCommand = {
       if (!queue.connection) {
         await queue.connect(cmdInitiator.voice.channel);
       }
-      await queue.play(track);
+      // await queue.play(track, { immediate: true });
+      const res = await player.play(cmdInitiator.voice.channel, url, {
+        requestedBy: interaction.user,
+      });
+      logger.info({ res }, 'Play result');
+
       return interaction.editReply({
         content: `
           🎶 | Playing the **${track.title}**\n
