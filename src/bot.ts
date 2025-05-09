@@ -1,5 +1,5 @@
 import { Client as DiscordClient, Events, Interaction, REST } from 'discord.js';
-import { Player as DiscordPlayer, Player, Queue } from 'discord-player';
+import { Player as DiscordPlayer, Player } from 'discord-player';
 import { Routes } from 'discord-api-types/v10';
 import { logger, Logger } from './logger';
 import {
@@ -25,11 +25,10 @@ async function runBot({ discord, logger, player }: BotDeps) {
     logger.info('The bot is ready');
   });
 
-  process.on('SIGINT', () => {
-    const disconnect = true;
-    for (const queue of player.queues.values()) {
-      queue.destroy(disconnect);
-    }
+  process.on('SIGINT', async () => {
+    await player
+      .destroy()
+      .catch((err) => logger.error({ err }, 'Failed to destroy player'));
   });
 
   discord.on(
@@ -41,7 +40,7 @@ async function runBot({ discord, logger, player }: BotDeps) {
   );
 
   player.on('error', handlePlayerError);
-  player.on('connectionError', handlePlayerError);
+  // player.on('connectionError', handlePlayerError);
 }
 
 function createInteractionCreateEventHandler({
@@ -84,18 +83,29 @@ function createInteractionCreateEventHandler({
       await command.execute({
         interaction,
         logger: commandLogger,
+        player,
         queue,
       });
     } catch (err) {
       commandLogger.error({ err }, 'Command error');
       if (interaction.deferred) {
-        await interaction.editReply({
-          content: `There was an error while executing the "${commandName}" command!`,
-        });
+        await interaction
+          .editReply({
+            content: `There was an error while executing the "${commandName}" command!`,
+            options: { ephemeral: true },
+          })
+          .catch((err) => {
+            commandLogger.error({ err }, 'Failed to edit reply');
+          });
       } else {
-        await interaction.reply({
-          content: `There was an error while executing the "${commandName}" command!`,
-        });
+        await interaction
+          .reply({
+            content: `There was an error while executing the "${commandName}" command!`,
+            ephemeral: true,
+          })
+          .catch((err) => {
+            commandLogger.error({ err }, 'Failed to reply to interaction');
+          });
       }
     }
   };
@@ -133,11 +143,11 @@ async function registerSlashCommands(
   );
 }
 
-function handlePlayerError(queue: Queue<unknown>, err: Error) {
+function handlePlayerError(err: Error) {
   logger.error({ err }, 'Discord player error occurred');
 
-  if (!queue.destroyed) {
-    const disconnect = true;
-    queue.destroy(disconnect);
-  }
+  // if (!queue.destroyed) {
+  //   const disconnect = true;
+  //   queue.destroy(disconnect);
+  // }
 }

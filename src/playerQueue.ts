@@ -14,7 +14,7 @@ function createPlayerQueue(
   { player }: PlayerQueueDeps,
   { interaction }: { interaction: ChatInputCommandWithGuild }
 ) {
-  return player.createQueue(interaction.guild, {
+  return player.queues.create(interaction.guild, {
     leaveOnEmpty: true,
     leaveOnEnd: true,
   });

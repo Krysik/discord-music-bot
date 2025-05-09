@@ -9,8 +9,8 @@ const PauseCommand: DiscordCommand = {
     .setDescription('Pauses the current track'),
 
   execute: ({ interaction, queue }) => {
-    if (queue.playing) {
-      queue.setPaused(true);
+    if (queue.isPlaying()) {
+      // queue.
       return interaction.reply({ content: 'Track has been paused' });
     }
     return interaction.reply({
