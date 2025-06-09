@@ -10,11 +10,14 @@ const StopCommand: DiscordCommand = {
 
   execute({ interaction, queue }) {
     if (queue.isPlaying()) {
-      // queue.stop();
+      const forceStop = true;
+      queue.node.stop(forceStop);
+
       return interaction.reply({
         content: 'The track has been stopped',
       });
     }
+
     return interaction.reply({
       content: 'Nothing is playing',
       ephemeral: true,

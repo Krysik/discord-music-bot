@@ -8,8 +8,11 @@ describe('pause command', () => {
 
     await PauseCommand.execute({
       queue: {
-        setPaused: setPausedMock,
-        playing: true,
+        isPlaying: () => true,
+        node: {
+          isPaused: () => false,
+          setPaused: setPausedMock,
+        },
       },
       interaction: {
         reply: replyMock,
@@ -17,6 +20,7 @@ describe('pause command', () => {
     } as any);
 
     expect(setPausedMock).toBeCalledWith(true);
+    expect(setPausedMock).toBeCalledTimes(1);
     expect(replyMock).toBeCalledWith({
       content: 'Track has been paused',
     });
@@ -28,15 +32,18 @@ describe('pause command', () => {
 
     await PauseCommand.execute({
       queue: {
-        setPaused: setPausedMock,
-        playing: false,
+        isPlaying: () => false,
+        node: {
+          isPaused: () => false,
+          setPaused: setPausedMock,
+        },
       },
       interaction: {
         reply: replyMock,
       },
     } as any);
 
-    expect(setPausedMock).not.toBeCalled();
+    expect(setPausedMock).toBeCalledTimes(0);
     expect(replyMock).toBeCalledWith({
       content: 'Nothing is playing',
       ephemeral: true,

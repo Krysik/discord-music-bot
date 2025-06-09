@@ -2,21 +2,24 @@ import { describe, expect, it, vi } from 'vitest';
 import { ResumeCommand } from './resume';
 
 describe('resume command', () => {
-  it('should unpause the current track if queue is paused', async () => {
+  it('should resume the current track if queue is paused', async () => {
     const replyMock = vi.fn();
-    const setPausedMock = vi.fn();
+    const resumeMock = vi.fn();
 
     await ResumeCommand.execute({
       queue: {
-        playing: true,
-        setPaused: setPausedMock,
+        isPlaying: () => true,
+        node: {
+          isPaused: () => true,
+          resume: resumeMock,
+        },
       },
       interaction: {
         reply: replyMock,
       },
     } as any);
 
-    expect(setPausedMock).toBeCalledWith(false);
+    expect(resumeMock).toBeCalledTimes(1);
     expect(replyMock).toBeCalledWith({
       content: 'Track has been resumed',
     });
@@ -24,21 +27,24 @@ describe('resume command', () => {
 
   it('should reply with an information that no track is playing', async () => {
     const replyMock = vi.fn();
-    const setPausedMock = vi.fn();
+    const resumeMock = vi.fn();
 
     await ResumeCommand.execute({
       queue: {
-        playing: false,
-        setPaused: setPausedMock,
+        isPlaying: () => false,
+        node: {
+          isPaused: () => false,
+          resume: resumeMock,
+        },
       },
       interaction: {
         reply: replyMock,
       },
     } as any);
 
-    expect(setPausedMock).not.toBeCalled();
+    expect(resumeMock).toBeCalledTimes(0);
     expect(replyMock).toBeCalledWith({
-      content: 'Nothing is playing',
+      content: 'Nothing is playing or track is not paused',
       ephemeral: true,
     });
   });

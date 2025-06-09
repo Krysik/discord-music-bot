@@ -1,4 +1,4 @@
-import type { GuildQueue, Player } from 'discord-player';
+import type { GuildQueue } from 'discord-player';
 import type {
   CacheType,
   ChatInputCommandInteraction,
@@ -11,7 +11,6 @@ import type { Logger } from './logger';
 type DiscordCommandDeps = {
   queue: GuildQueue;
   interaction: ChatInputCommandInteraction<CacheType>;
-  player: Player;
   logger: Logger;
 };
 
