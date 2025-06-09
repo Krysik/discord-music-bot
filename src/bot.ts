@@ -25,12 +25,6 @@ async function runBot({ discord, logger, player }: BotDeps) {
     logger.info('The bot is ready');
   });
 
-  process.on('SIGINT', async () => {
-    await player
-      .destroy()
-      .catch((err) => logger.error({ err }, 'Failed to destroy player'));
-  });
-
   discord.on(
     Events.InteractionCreate,
     createInteractionCreateEventHandler({
@@ -39,8 +33,9 @@ async function runBot({ discord, logger, player }: BotDeps) {
     })
   );
 
-  player.on('error', handlePlayerError);
-  // player.on('connectionError', handlePlayerError);
+  player.on('error', (err) => {
+    logger.error({ err }, 'Player error');
+  });
 }
 
 function createInteractionCreateEventHandler({
@@ -83,7 +78,6 @@ function createInteractionCreateEventHandler({
       await command.execute({
         interaction,
         logger: commandLogger,
-        player,
         queue,
       });
     } catch (err) {
@@ -141,13 +135,4 @@ async function registerSlashCommands(
       (response as { length: number }).length
     } application commands.`
   );
-}
-
-function handlePlayerError(err: Error) {
-  logger.error({ err }, 'Discord player error occurred');
-
-  // if (!queue.destroyed) {
-  //   const disconnect = true;
-  //   queue.destroy(disconnect);
-  // }
 }

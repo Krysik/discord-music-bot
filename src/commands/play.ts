@@ -1,34 +1,7 @@
-import { Player, Track } from 'discord-player';
-import { GuildMember, SlashCommandBuilder, User } from 'discord.js';
-import { DiscordCommand } from '../command';
-import { YouTube } from 'youtube-sr';
-import { Logger } from '../logger';
+import { type GuildMember, SlashCommandBuilder } from 'discord.js';
+import type { DiscordCommand } from '../command';
 
 export { PlayCommand };
-
-function getTrack({ player, logger }: { player: Player; logger: Logger }) {
-  return async ({ url, requestedBy }: { url: string; requestedBy: User }) => {
-    try {
-      const video = await YouTube.getVideo(url);
-
-      return new Track(player, {
-        title: video.title ?? '',
-        description: video.description ?? '',
-        author: '',
-        requestedBy,
-        source: 'youtube',
-        url: video.url,
-        raw: video,
-        thumbnail: '',
-        duration: String(video.duration),
-        views: video.views,
-      });
-    } catch (err) {
-      logger.error({ err }, 'Error while getting a track');
-      return null;
-    }
-  };
-}
 
 const PlayCommand: DiscordCommand = {
   data: new SlashCommandBuilder()
@@ -56,18 +29,19 @@ const PlayCommand: DiscordCommand = {
     await interaction.deferReply();
 
     const url = interaction.options.getString('url', isRequired);
-    const track = await getTrack({ player: queue.player, logger })({
-      url,
-      requestedBy: interaction.user,
-    });
 
-    if (track) {
-      if (!queue.connection) {
-        await queue.connect(cmdInitiator.voice.channel);
-      }
-      await queue.player.play(cmdInitiator.voice.channel, track, {
-        requestedBy: interaction.user,
-      });
+    if (!queue.connection) {
+      await queue.connect(cmdInitiator.voice.channel);
+    }
+
+    try {
+      const { track } = await queue.player.play(
+        cmdInitiator.voice.channel,
+        url,
+        {
+          requestedBy: interaction.user,
+        }
+      );
 
       return interaction.editReply({
         content: `
@@ -76,13 +50,29 @@ const PlayCommand: DiscordCommand = {
           URL: ${url}
         `,
       });
-    }
+    } catch (err) {
+      logger.error({ err }, 'Error while playing a track');
+      if (isNotFoundError(err)) {
+        return interaction.editReply({
+          content: `Track not found for a given URL\n${url}`,
+          options: {
+            ephemeral: true,
+          },
+        });
+      }
 
-    return interaction.editReply({
-      content: `Track not found for a given URL\n${url}`,
-      options: {
-        ephemeral: true,
-      },
-    });
+      throw err;
+    }
   },
+};
+
+const isNotFoundError = (err: unknown): err is { code: string } => {
+  const trackNotFoundErrCode = 'ERR_NO_RESULT';
+
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'code' in err &&
+    (err as { code: unknown }).code === trackNotFoundErrCode
+  );
 };
