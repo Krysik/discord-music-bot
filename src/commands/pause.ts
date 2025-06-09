@@ -9,10 +9,12 @@ const PauseCommand: DiscordCommand = {
     .setDescription('Pauses the current track'),
 
   execute: ({ interaction, queue }) => {
-    if (queue.isPlaying()) {
-      // queue.
+    if (queue.isPlaying() && !queue.node.isPaused()) {
+      queue.node.setPaused(true);
+
       return interaction.reply({ content: 'Track has been paused' });
     }
+
     return interaction.reply({
       content: 'Nothing is playing',
       ephemeral: true,

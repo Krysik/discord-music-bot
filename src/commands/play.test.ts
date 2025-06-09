@@ -12,6 +12,7 @@ describe('play command', () => {
     const queueConnectMock = vi.fn();
     const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const playMock = vi.fn();
+
     const testUsername = 'testUser';
     const testTrackTitle = 'test-track-title';
 
@@ -32,7 +33,9 @@ describe('play command', () => {
       } as any,
       queue: {
         connect: queueConnectMock,
-        play: playMock,
+        player: {
+          play: playMock,
+        },
       } as any,
     });
 
@@ -76,8 +79,10 @@ describe('play command', () => {
       } as any,
       queue: {
         connect: queueConnectMock,
-        play: playMock,
         connection: { paused: false },
+        player: {
+          play: playMock,
+        },
       } as any,
     });
 
