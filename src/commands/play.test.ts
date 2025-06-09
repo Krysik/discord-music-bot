@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { YouTube } from 'youtube-sr';
 import { ChannelType } from 'discord.js';
 import { PlayCommand } from './play';
 import { logger } from '../logger';
@@ -7,18 +6,18 @@ import { logger } from '../logger';
 describe('play command', () => {
   it('should play a track from a url', async () => {
     const trackUrl = 'https://test-url';
+    const testUsername = 'testUser';
+    const testTrackTitle = 'test-track-title';
+
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
     const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
-    const playMock = vi.fn();
-
-    const testUsername = 'testUser';
-    const testTrackTitle = 'test-track-title';
-
-    vi.spyOn(YouTube, 'getVideo').mockResolvedValue({
-      title: testTrackTitle,
-    } as any);
+    const playMock = vi.fn().mockResolvedValueOnce({
+      track: {
+        title: testTrackTitle,
+      },
+    });
 
     await PlayCommand.execute({
       logger,
@@ -54,17 +53,18 @@ describe('play command', () => {
 
   it('should not try connect the queue if it is already connected', async () => {
     const trackUrl = 'https://test-url';
+    const testUsername = 'testUser';
+    const testTrackTitle = 'test-track-title';
+
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
     const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
-    const playMock = vi.fn();
-    const testUsername = 'testUser';
-    const testTrackTitle = 'test-track-title';
-
-    vi.spyOn(YouTube, 'getVideo').mockResolvedValue({
-      title: testTrackTitle,
-    } as any);
+    const playMock = vi.fn().mockResolvedValueOnce({
+      track: {
+        title: testTrackTitle,
+      },
+    });
 
     await PlayCommand.execute({
       logger,
@@ -112,14 +112,17 @@ describe('play command', () => {
   });
 
   it('should reply with an information that a track was not found', async () => {
+    // Discord player does not export this error
+    class NoResultError extends Error {
+      public readonly code = 'ERR_NO_RESULT';
+    }
+
     const trackUrl = 'https://test-url';
     const deferReplyMock = vi.fn();
     const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
-    const playMock = vi.fn();
-
-    vi.spyOn(YouTube, 'getVideo').mockRejectedValueOnce(new Error('NOT_FOUND'));
+    const playMock = vi.fn().mockRejectedValueOnce(new NoResultError());
 
     await PlayCommand.execute({
       logger,
@@ -133,17 +136,19 @@ describe('play command', () => {
       } as any,
       queue: {
         connect: queueConnectMock,
-        play: playMock,
+        player: {
+          play: playMock,
+        },
       } as any,
     });
 
+    expect(playMock).toBeCalledTimes(1);
     expect(editReplyMock).toBeCalledWith({
       content: `Track not found for a given URL\n${trackUrl}`,
       options: {
         ephemeral: true,
       },
     });
-    expect(queueConnectMock).not.toBeCalled();
-    expect(playMock).not.toBeCalled();
+    expect(queueConnectMock).toBeCalledTimes(1);
   });
 });
