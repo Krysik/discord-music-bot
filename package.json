@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node -r @swc-node/register -r dotenv/config src/main.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . src/**/*.{ts,js}",
     "audit": "npx audit-ci@^7 --config ./.audit-ci.jsonc",
     "test": "vitest run --config ./src/test/vitest.config.ts",
@@ -37,7 +37,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "pino-pretty": "^13.0.0",
     "prettier": "^2.5.1",
-    "typescript": "^4.8.4",
+    "typescript": "^5.8.2",
     "vitest": "^3.1.2"
   }
 }
