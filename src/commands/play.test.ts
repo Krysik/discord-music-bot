@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ChannelType } from 'discord.js';
+import { ChannelType, MessageFlags } from 'discord.js';
 import { PlayCommand } from './play';
 import { logger } from '../logger';
 
@@ -12,7 +12,9 @@ describe('play command', () => {
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
-    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
+    const getCommandParamMock = vi
+      .fn()
+      .mockReturnValueOnce({ value: trackUrl });
     const playMock = vi.fn().mockResolvedValueOnce({
       track: {
         title: testTrackTitle,
@@ -26,7 +28,7 @@ describe('play command', () => {
         editReply: editReplyMock,
         deferReply: deferReplyMock,
         options: {
-          getString: getCommandParamMock,
+          get: getCommandParamMock,
         },
         user: { username: testUsername },
       } as any,
@@ -59,7 +61,9 @@ describe('play command', () => {
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
-    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
+    const getCommandParamMock = vi
+      .fn()
+      .mockReturnValueOnce({ value: trackUrl });
     const playMock = vi.fn().mockResolvedValueOnce({
       track: {
         title: testTrackTitle,
@@ -73,7 +77,7 @@ describe('play command', () => {
         editReply: editReplyMock,
         deferReply: deferReplyMock,
         options: {
-          getString: getCommandParamMock,
+          get: getCommandParamMock,
         },
         user: { username: testUsername },
       } as any,
@@ -106,7 +110,9 @@ describe('play command', () => {
 
     expect(replyMock).toBeCalledWith({
       content: 'You must be in a voice channel to use this command',
-      ephemeral: true,
+      options: {
+        flags: MessageFlags.Ephemeral,
+      },
     });
     expect(editReplyMock).not.toBeCalled();
   });
@@ -119,7 +125,9 @@ describe('play command', () => {
 
     const trackUrl = 'https://test-url';
     const deferReplyMock = vi.fn();
-    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
+    const getCommandParamMock = vi
+      .fn()
+      .mockReturnValueOnce({ value: trackUrl });
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
     const playMock = vi.fn().mockRejectedValueOnce(new NoResultError());
@@ -131,7 +139,7 @@ describe('play command', () => {
         editReply: editReplyMock,
         deferReply: deferReplyMock,
         options: {
-          getString: getCommandParamMock,
+          get: getCommandParamMock,
         },
       } as any,
       queue: {
@@ -146,7 +154,7 @@ describe('play command', () => {
     expect(editReplyMock).toBeCalledWith({
       content: `Track not found for a given URL\n${trackUrl}`,
       options: {
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       },
     });
     expect(queueConnectMock).toBeCalledTimes(1);

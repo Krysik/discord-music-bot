@@ -1,18 +1,22 @@
-import { type GuildMember, SlashCommandBuilder } from 'discord.js';
+import {
+  type GuildMember,
+  SlashCommandBuilder,
+  MessageFlags,
+} from 'discord.js';
 import type { DiscordCommand } from '../command';
 
 export { PlayCommand };
 
 const PlayCommand: DiscordCommand = {
   data: new SlashCommandBuilder()
+    .setDescription('Plays a track')
     .setName('play')
     .addStringOption((option) =>
       option
         .setName('url')
         .setDescription('The url to song you want to play')
         .setRequired(true)
-    )
-    .setDescription('Plays a track'),
+    ) as SlashCommandBuilder,
 
   async execute({ interaction, queue, logger }) {
     const isRequired = true;
@@ -22,17 +26,29 @@ const PlayCommand: DiscordCommand = {
       logger.warn({ cmdInitiator }, 'User is not in a voice channel');
       return interaction.reply({
         content: 'You must be in a voice channel to use this command',
-        ephemeral: true,
+        options: {
+          flags: MessageFlags.Ephemeral,
+        },
       });
     }
 
     await interaction.deferReply();
 
-    const url = interaction.options.getString('url', isRequired);
+    const urlOption = interaction.options.get('url', isRequired);
 
     if (!queue.connection) {
       await queue.connect(cmdInitiator.voice.channel);
     }
+
+    if (typeof urlOption.value !== 'string') {
+      return interaction.editReply({
+        content: 'Invalid URL',
+        options: {
+          flags: MessageFlags.Ephemeral,
+        },
+      });
+    }
+    const url = urlOption.value;
 
     try {
       const { track } = await queue.player.play(
@@ -56,7 +72,7 @@ const PlayCommand: DiscordCommand = {
         return interaction.editReply({
           content: `Track not found for a given URL\n${url}`,
           options: {
-            ephemeral: true,
+            flags: MessageFlags.Ephemeral,
           },
         });
       }
