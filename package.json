@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@swc-node/register": "^1.10.10",
+    "@swc/core": "^1.15.18",
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.39.0",
     "@typescript-eslint/parser": "^5.39.0",
