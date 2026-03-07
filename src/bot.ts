@@ -1,4 +1,10 @@
-import { Client as DiscordClient, Events, Interaction, REST } from 'discord.js';
+import {
+  Client as DiscordClient,
+  Events,
+  Interaction,
+  MessageFlags,
+  REST,
+} from 'discord.js';
 import { Player as DiscordPlayer, Player } from 'discord-player';
 import { Routes } from 'discord-api-types/v10';
 import { logger, Logger } from './logger';
@@ -21,7 +27,7 @@ async function runBot({ discord, logger, player }: BotDeps) {
   const commands = buildCommandsMap();
   await registerSlashCommands({ logger }, { commands });
 
-  discord.on(Events.ClientReady, () => {
+  discord.once(Events.ClientReady, () => {
     logger.info('The bot is ready');
   });
 
@@ -86,7 +92,9 @@ function createInteractionCreateEventHandler({
         await interaction
           .editReply({
             content: `There was an error while executing the "${commandName}" command!`,
-            options: { ephemeral: true },
+            options: {
+              flags: MessageFlags.Ephemeral,
+            },
           })
           .catch((err) => {
             commandLogger.error({ err }, 'Failed to edit reply');
@@ -95,7 +103,9 @@ function createInteractionCreateEventHandler({
         await interaction
           .reply({
             content: `There was an error while executing the "${commandName}" command!`,
-            ephemeral: true,
+            options: {
+              flags: MessageFlags.Ephemeral,
+            },
           })
           .catch((err) => {
             commandLogger.error({ err }, 'Failed to reply to interaction');

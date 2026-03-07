@@ -12,9 +12,7 @@ describe('play command', () => {
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
-    const getCommandParamMock = vi
-      .fn()
-      .mockReturnValueOnce({ value: trackUrl });
+    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const playMock = vi.fn().mockResolvedValueOnce({
       track: {
         title: testTrackTitle,
@@ -28,7 +26,7 @@ describe('play command', () => {
         editReply: editReplyMock,
         deferReply: deferReplyMock,
         options: {
-          get: getCommandParamMock,
+          getString: getCommandParamMock,
         },
         user: { username: testUsername },
       } as any,
@@ -61,9 +59,7 @@ describe('play command', () => {
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
-    const getCommandParamMock = vi
-      .fn()
-      .mockReturnValueOnce({ value: trackUrl });
+    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const playMock = vi.fn().mockResolvedValueOnce({
       track: {
         title: testTrackTitle,
@@ -77,7 +73,7 @@ describe('play command', () => {
         editReply: editReplyMock,
         deferReply: deferReplyMock,
         options: {
-          get: getCommandParamMock,
+          getString: getCommandParamMock,
         },
         user: { username: testUsername },
       } as any,
@@ -125,9 +121,7 @@ describe('play command', () => {
 
     const trackUrl = 'https://test-url';
     const deferReplyMock = vi.fn();
-    const getCommandParamMock = vi
-      .fn()
-      .mockReturnValueOnce({ value: trackUrl });
+    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const editReplyMock = vi.fn();
     const queueConnectMock = vi.fn();
     const playMock = vi.fn().mockRejectedValueOnce(new NoResultError());
@@ -139,7 +133,7 @@ describe('play command', () => {
         editReply: editReplyMock,
         deferReply: deferReplyMock,
         options: {
-          get: getCommandParamMock,
+          getString: getCommandParamMock,
         },
       } as any,
       queue: {

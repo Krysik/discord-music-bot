@@ -19,7 +19,6 @@ const PlayCommand: DiscordCommand = {
     ) as SlashCommandBuilder,
 
   async execute({ interaction, queue, logger }) {
-    const isRequired = true;
     const cmdInitiator = interaction.member as GuildMember;
 
     if (!cmdInitiator.voice.channel) {
@@ -31,24 +30,13 @@ const PlayCommand: DiscordCommand = {
         },
       });
     }
-
     await interaction.deferReply();
-
-    const urlOption = interaction.options.get('url', isRequired);
 
     if (!queue.connection) {
       await queue.connect(cmdInitiator.voice.channel);
     }
-
-    if (typeof urlOption.value !== 'string') {
-      return interaction.editReply({
-        content: 'Invalid URL',
-        options: {
-          flags: MessageFlags.Ephemeral,
-        },
-      });
-    }
-    const url = urlOption.value;
+    const isRequired = true;
+    const url = interaction.options.getString('url', isRequired);
 
     try {
       const { track } = await queue.player.play(
