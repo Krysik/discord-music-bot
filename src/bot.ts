@@ -4,9 +4,9 @@ import {
   Interaction,
   MessageFlags,
   REST,
+  Routes,
 } from 'discord.js';
 import { Player as DiscordPlayer, Player } from 'discord-player';
-import { Routes } from 'discord-api-types/v10';
 import { logger, Logger } from './logger';
 import {
   buildApplicationCommandsJsonBody,
