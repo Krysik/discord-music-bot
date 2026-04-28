@@ -1,5 +1,7 @@
 FROM node:23.11-bookworm-slim AS base
 
+ARG PNPM_VERSION=10.33.2
+
 WORKDIR /home/node/app
 COPY package.json pnpm-lock.yaml ./
 # RUN chown -R node:node /opt/app
@@ -7,7 +9,8 @@ COPY package.json pnpm-lock.yaml ./
 RUN apt-get -y update && \
   apt-get -y upgrade && \
   apt-get install -y ffmpeg make g++ && \
-  corepack enable
+  corepack enable && \
+  corepack prepare pnpm@${PNPM_VERSION} --activate
 
 # TODO: Fix permission issue [Error: EACCES: permission denied, rmdir '/opt/app/node_modules/.bin'] to use node user
 # USER node

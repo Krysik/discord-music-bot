@@ -17,6 +17,10 @@
   },
   "author": "Marcin Krysiński <marcin_krysinski@outlook.com>",
   "license": "ISC",
+  "packageManager": "pnpm@10.33.2",
+  "pnpm": {
+    "packageManagerStrictVersion": false
+  },
   "dependencies": {
     "@discordjs/opus": "^0.10.0",
     "@snazzah/davey": "^0.1.11",
