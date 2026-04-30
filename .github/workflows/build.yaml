@@ -48,6 +48,18 @@ jobs:
         with:
           service-key: ${{ secrets.SERVICE_KEY }}
 
+      - name: Cleanup remote directory
+        if: github.event_name == 'push' && github.ref_name == 'master'
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          script: |
+            rm -rf ~/dcbot/app/node_modules
+            rm -rf ~/dcbot/app/dist
+            rm -rf ~/dcbot/app/.pnpm-store
+
       - name: Copy files to the server
         if: github.event_name == 'push' && github.ref_name == 'master'
         uses: appleboy/scp-action@v1.0.0
