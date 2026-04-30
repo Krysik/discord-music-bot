@@ -13,38 +13,35 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Cache node_modules
-        id: cache-deps
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          path: node_modules
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23.11
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
-        # check if cache-hit happened then do not execute npm ci
-        if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: npm ci --no-audit
+        run: pnpm install --frozen-lockfile
 
       - name: Audit dependencies
-        run: npx audit-ci@^7 --config ./.audit-ci.jsonc
+        run: pnpm dlx audit-ci@^7 --config ./.audit-ci.jsonc
 
       - name: Run tests
-        run: npm run test --if-present
+        run: pnpm run --if-present test
 
       - name: Lint
-        run: npm run lint
+        run: pnpm run lint
 
       - name: Check types
-        run: npm run typecheck
+        run: pnpm run typecheck
 
       - name: Build the app
-        run: npm run build
+        run: pnpm run build
 
       - uses: twingate/github-action@v1.5
         if: github.event_name == 'push' && github.ref_name == 'master'
@@ -58,8 +55,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          source: "./*"
-          target: "/home/${{ secrets.SSH_USERNAME }}/dcbot/app"
+          source: './*'
+          target: '/home/${{ secrets.SSH_USERNAME }}/dcbot/app'
 
       - name: Run container
         if: github.event_name == 'push' && github.ref_name == 'master'

@@ -1,12 +1,16 @@
 FROM node:23.11-bookworm-slim AS base
 
+ARG PNPM_VERSION=10.33.2
+
 WORKDIR /home/node/app
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 # RUN chown -R node:node /opt/app
 
 RUN apt-get -y update && \
   apt-get -y upgrade && \
-  apt-get install -y ffmpeg make g++
+  apt-get install -y ffmpeg make g++ && \
+  corepack enable && \
+  corepack prepare pnpm@${PNPM_VERSION} --activate
 
 # TODO: Fix permission issue [Error: EACCES: permission denied, rmdir '/opt/app/node_modules/.bin'] to use node user
 # USER node
@@ -14,17 +18,17 @@ RUN apt-get -y update && \
 FROM base AS dev
 
 ENV NODE_ENV=development
-RUN npm ci --no-audit
+RUN pnpm install --frozen-lockfile
 COPY --chown=node:node . ./
-CMD [ "npm", "run", "start" ]
+CMD ["pnpm", "run", "start"]
 
 FROM dev AS build
-RUN npm run build
+RUN pnpm run build
 
 FROM base
 
 ENV NODE_ENV=production
-RUN npm ci --no-audit --omit=dev
+RUN pnpm install --frozen-lockfile --prod
 COPY --chown=node:node --from=build /home/node/app/build ./
 
 CMD ["node", "-r", "dotenv/config", "main.js"]
