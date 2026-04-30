@@ -16,7 +16,9 @@ async function shutdown({
 }) {
   logger.info({ signal }, 'Shutting down the bot');
 
-  discord.destroy();
+  await discord
+    .destroy()
+    .catch((err) => logger.error({ err }, 'Failed to destroy discord client'));
   await player
     .destroy()
     .catch((err) => logger.error({ err }, 'Failed to destroy player'));

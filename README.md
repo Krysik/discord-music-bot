@@ -11,5 +11,4 @@ Each command is kept in the `src/commands` directory.
 
 1. Copy environment variables template using the `cp .env.template .env` command
 2. Fill in missing variables
-3. Start bot with the `npm start`
-
+3. Start bot with the `pnpm start`
