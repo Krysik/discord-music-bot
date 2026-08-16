@@ -25,16 +25,11 @@ const PlayCommand: DiscordCommand = {
       logger.warn({ cmdInitiator }, 'User is not in a voice channel');
       return interaction.reply({
         content: 'You must be in a voice channel to use this command',
-        options: {
-          flags: MessageFlags.Ephemeral,
-        },
+        flags: MessageFlags.Ephemeral,
       });
     }
     await interaction.deferReply();
 
-    if (!queue.connection) {
-      await queue.connect(cmdInitiator.voice.channel);
-    }
     const isRequired = true;
     const url = interaction.options.getString('url', isRequired);
 
@@ -59,9 +54,6 @@ const PlayCommand: DiscordCommand = {
       if (isNotFoundError(err)) {
         return interaction.editReply({
           content: `Track not found for a given URL\n${url}`,
-          options: {
-            flags: MessageFlags.Ephemeral,
-          },
         });
       }
 

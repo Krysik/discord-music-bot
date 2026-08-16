@@ -11,7 +11,6 @@ describe('play command', () => {
 
     const deferReplyMock = vi.fn();
     const editReplyMock = vi.fn();
-    const queueConnectMock = vi.fn();
     const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const playMock = vi.fn().mockResolvedValueOnce({
       track: {
@@ -31,7 +30,6 @@ describe('play command', () => {
         user: { username: testUsername },
       } as any,
       queue: {
-        connect: queueConnectMock,
         player: {
           play: playMock,
         },
@@ -39,7 +37,6 @@ describe('play command', () => {
     });
 
     expect(deferReplyMock).toBeCalledTimes(1);
-    expect(queueConnectMock).toBeCalledTimes(1);
     expect(playMock).toBeCalledTimes(1);
 
     expect(editReplyMock).toBeCalledWith({
@@ -49,45 +46,6 @@ describe('play command', () => {
           URL: ${trackUrl}
         `,
     });
-  });
-
-  it('should not try connect the queue if it is already connected', async () => {
-    const trackUrl = 'https://test-url';
-    const testUsername = 'testUser';
-    const testTrackTitle = 'test-track-title';
-
-    const deferReplyMock = vi.fn();
-    const editReplyMock = vi.fn();
-    const queueConnectMock = vi.fn();
-    const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
-    const playMock = vi.fn().mockResolvedValueOnce({
-      track: {
-        title: testTrackTitle,
-      },
-    });
-
-    await PlayCommand.execute({
-      logger,
-      interaction: {
-        member: { voice: { channel: { type: ChannelType.GuildVoice } } },
-        editReply: editReplyMock,
-        deferReply: deferReplyMock,
-        options: {
-          getString: getCommandParamMock,
-        },
-        user: { username: testUsername },
-      } as any,
-      queue: {
-        connect: queueConnectMock,
-        connection: { paused: false },
-        player: {
-          play: playMock,
-        },
-      } as any,
-    });
-
-    expect(deferReplyMock).toBeCalledTimes(1);
-    expect(queueConnectMock).toBeCalledTimes(0);
   });
 
   it('should require the command executor to be in a voice channel', async () => {
@@ -106,9 +64,7 @@ describe('play command', () => {
 
     expect(replyMock).toBeCalledWith({
       content: 'You must be in a voice channel to use this command',
-      options: {
-        flags: MessageFlags.Ephemeral,
-      },
+      flags: MessageFlags.Ephemeral,
     });
     expect(editReplyMock).not.toBeCalled();
   });
@@ -123,7 +79,6 @@ describe('play command', () => {
     const deferReplyMock = vi.fn();
     const getCommandParamMock = vi.fn().mockReturnValueOnce(trackUrl);
     const editReplyMock = vi.fn();
-    const queueConnectMock = vi.fn();
     const playMock = vi.fn().mockRejectedValueOnce(new NoResultError());
 
     await PlayCommand.execute({
@@ -137,7 +92,6 @@ describe('play command', () => {
         },
       } as any,
       queue: {
-        connect: queueConnectMock,
         player: {
           play: playMock,
         },
@@ -147,10 +101,6 @@ describe('play command', () => {
     expect(playMock).toBeCalledTimes(1);
     expect(editReplyMock).toBeCalledWith({
       content: `Track not found for a given URL\n${trackUrl}`,
-      options: {
-        flags: MessageFlags.Ephemeral,
-      },
     });
-    expect(queueConnectMock).toBeCalledTimes(1);
   });
 });

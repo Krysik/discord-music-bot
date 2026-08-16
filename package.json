@@ -22,7 +22,8 @@
     "onlyBuiltDependencies": [
       "@discordjs/opus",
       "@swc/core",
-      "esbuild"
+      "esbuild",
+      "youtube-dl-exec"
     ]
   },
   "dependencies": {
