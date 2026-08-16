@@ -1,10 +1,9 @@
-FROM node:23.11-bookworm-slim AS base
+FROM node:23-bookworm-slim AS base
 
 ARG PNPM_VERSION=10.33.2
 
 WORKDIR /home/node/app
 COPY package.json pnpm-lock.yaml ./
-# RUN chown -R node:node /opt/app
 
 RUN apt-get -y update && \
   apt-get -y upgrade && \
@@ -12,23 +11,22 @@ RUN apt-get -y update && \
   corepack enable && \
   corepack prepare pnpm@${PNPM_VERSION} --activate
 
-# TODO: Fix permission issue [Error: EACCES: permission denied, rmdir '/opt/app/node_modules/.bin'] to use node user
-# USER node
-
 FROM base AS dev
 
 ENV NODE_ENV=development
 RUN pnpm install --frozen-lockfile
 COPY --chown=node:node . ./
-CMD ["pnpm", "run", "start"]
+USER node
+CMD ["node", "-r", "@swc-node/register", "-r", "dotenv/config", "src/main.ts"]
 
 FROM dev AS build
 RUN pnpm run build
 
-FROM base
+FROM base AS release
 
 ENV NODE_ENV=production
 RUN pnpm install --frozen-lockfile --prod
 COPY --chown=node:node --from=build /home/node/app/build ./
+USER node
 
 CMD ["node", "-r", "dotenv/config", "main.js"]
