@@ -4,6 +4,7 @@ import { YoutubeiExtractor } from 'discord-player-youtubei';
 
 import { runBot } from './bot';
 import { logger } from './logger';
+import { registerPlayerEvents } from './playerEvents';
 
 async function shutdown({
   discord,
@@ -35,6 +36,7 @@ async function main() {
   });
 
   const player = new DiscordPlayer(discord);
+  registerPlayerEvents({ player, logger });
 
   process.on('SIGINT', (s) => shutdown({ discord, player, signal: s }));
   process.on('SIGTERM', (s) => shutdown({ discord, player, signal: s }));
@@ -45,7 +47,15 @@ async function main() {
   }
 
   await discord.login(DC_TOKEN);
-  await player.extractors.register(YoutubeiExtractor, {});
+  await player.extractors.register(YoutubeiExtractor, {
+    logLevel: process.env.LOG_LEVEL === 'debug' ? 'ALL' : 'NONE',
+    // YouTube now answers with SABR-only responses for most videos: the audio
+    // formats carry neither a direct url nor a signature cipher, and the
+    // extractor's own downloader yields an empty stream - silently, so the
+    // audio player just hangs in "buffering" forever. yt-dlp still resolves
+    // those, so route stream extraction through it.
+    useYoutubeDL: true,
+  });
 
   try {
     await runBot({

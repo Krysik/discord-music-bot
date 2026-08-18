@@ -38,10 +38,6 @@ async function runBot({ discord, logger, player }: BotDeps) {
       player,
     })
   );
-
-  player.on('error', (err) => {
-    logger.error({ err }, 'Player error');
-  });
 }
 
 function createInteractionCreateEventHandler({
@@ -65,7 +61,7 @@ function createInteractionCreateEventHandler({
     if (!command) {
       await interaction.reply({
         content: 'Command not found',
-        ephemeral: true,
+        flags: MessageFlags.Ephemeral,
       });
       return;
     }
@@ -86,15 +82,15 @@ function createInteractionCreateEventHandler({
         logger: commandLogger,
         queue,
       });
+      commandLogger.info('Command invoked successfully');
     } catch (err) {
       commandLogger.error({ err }, 'Command error');
       if (interaction.deferred) {
         await interaction
+          // `editReply` cannot change ephemerality - it is fixed by the
+          // original `deferReply`, so no flags here.
           .editReply({
             content: `There was an error while executing the "${commandName}" command!`,
-            options: {
-              flags: MessageFlags.Ephemeral,
-            },
           })
           .catch((err) => {
             commandLogger.error({ err }, 'Failed to edit reply');
@@ -103,9 +99,7 @@ function createInteractionCreateEventHandler({
         await interaction
           .reply({
             content: `There was an error while executing the "${commandName}" command!`,
-            options: {
-              flags: MessageFlags.Ephemeral,
-            },
+            flags: MessageFlags.Ephemeral,
           })
           .catch((err) => {
             commandLogger.error({ err }, 'Failed to reply to interaction');
