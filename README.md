@@ -11,4 +11,5 @@ Each command is kept in the `src/commands` directory.
 
 1. Copy environment variables template using the `cp .env.template .env` command
 2. Fill in missing variables
-3. Start bot with the `pnpm start`
+3. Install dependencies within docker container by running the `docker compose run --rm bot pnpm install`
+4. Run bot with `docker compose up`

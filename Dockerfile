@@ -2,38 +2,45 @@ FROM node:23-bookworm-slim AS base
 
 ARG PNPM_VERSION=10.33.2
 
-# apt and corepack need root, so they run before the user switch.
-RUN apt-get -y update && \
-  apt-get -y upgrade && \
-  apt-get install -y ffmpeg make g++ && \
-  corepack enable && \
-  corepack prepare pnpm@${PNPM_VERSION} --activate
+WORKDIR /app
 
-# WORKDIR would create this as root, leaving the `node` user unable to write in
-# its own working directory - that breaks `pnpm run build` and any `pnpm
-# install` inside a running container.
-RUN mkdir -p /home/node/app && chown node:node /home/node/app
+# Build tools needed for native modules (@discordjs/opus, @swc/core)
+RUN apt-get -y update \
+    && apt-get -y upgrade \
+    && apt-get install -y ffmpeg make g++ \
+    && corepack enable \
+    && corepack prepare pnpm@${PNPM_VERSION} --activate
 
-WORKDIR /home/node/app
-USER node
+COPY package.json pnpm-lock.yaml ./
 
-COPY --chown=node:node package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=bind,source=package.json,target=package.json \
+    pnpm install
 
-FROM base AS dev
+COPY . .
 
-ENV NODE_ENV=development
-RUN pnpm install --frozen-lockfile
-COPY --chown=node:node . ./
 CMD ["node", "-r", "@swc-node/register", "-r", "dotenv/config", "src/main.ts"]
 
-FROM dev AS build
-RUN pnpm run build
 
-FROM base AS release
+FROM node:23-bookworm-slim AS builder
 
 ENV NODE_ENV=production
-RUN pnpm install --frozen-lockfile --prod
-COPY --chown=node:node --from=build /home/node/app/build ./
-USER node
+
+WORKDIR /app
+
+RUN --mount=type=cache,target=/root/.npm \
+    --mount=type=bind,source=package.json,target=package.json \
+    pnpm ci --prod
+
+RUN pnpm run build
+
+FROM node:23-bookworm-slim as prod-runner
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=builder --chown=node:node /app/build ./build
 
 CMD ["node", "-r", "dotenv/config", "main.js"]

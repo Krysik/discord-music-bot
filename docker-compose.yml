@@ -1,16 +1,17 @@
 services:
-  app:
+  bot:
     build:
       context: .
       dockerfile: Dockerfile
-      target: dev
-
+      target: base
     env_file:
-      - ./.env
-
+      - .env
+    environment:
+      - NODE_ENV=development
+      # Store lives inside the bind mount, so it shares a filesystem with
+      # node_modules and pnpm can hardlink into it instead of copying.
+      - npm_config_store_dir=/app/.pnpm-store
     volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-
-volumes:
-  node_modules:
+      # Single bind mount, no named volume over node_modules: the container
+      # installs the deps and the host IDE reads the same directory.
+      - .:/app
