@@ -6,18 +6,12 @@
   "allowlist": [
     // https://github.com/advisories/GHSA-23hp-3jrh-7fpw
     "GHSA-23hp-3jrh-7fpw",
-    // https://github.com/advisories/GHSA-28wg-ghj8-5hjv
-    "GHSA-28wg-ghj8-5hjv",
-    // https://github.com/advisories/GHSA-2v37-7h3g-55p8
-    "GHSA-2v37-7h3g-55p8",
     // "https://github.com/advisories/GHSA-34x7-hfp2-rc4v"
     "GHSA-34x7-hfp2-rc4v",
     // https://github.com/advisories/GHSA-35p6-xmwp-9g52
     "GHSA-35p6-xmwp-9g52",
     // https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
     "GHSA-3jxr-9vmj-r5cp",
-    // https://github.com/advisories/GHSA-4cwx-7wf7-3272
-    "GHSA-4cwx-7wf7-3272",
     // https://github.com/advisories/GHSA-52cp-r559-cp3m
     "GHSA-52cp-r559-cp3m",
     // https://github.com/advisories/GHSA-58qx-3vcg-4xpx
@@ -38,8 +32,6 @@
     "GHSA-96hv-2xvq-fx4p",
     // https://github.com/advisories/GHSA-9ppj-qmqm-q256
     "GHSA-9ppj-qmqm-q256",
-    // https://github.com/advisories/GHSA-fx2h-pf6j-xcff
-    "GHSA-fx2h-pf6j-xcff",
     // https://github.com/advisories/GHSA-fxqj-rqcc-2cmp
     "GHSA-fxqj-rqcc-2cmp",
     // https://github.com/advisories/GHSA-g7r4-m6w7-qqqr
@@ -50,18 +42,12 @@
     "GHSA-gvwx-54wh-qm9j",
     // https://github.com/advisories/GHSA-h67p-54hq-rp68
     "GHSA-h67p-54hq-rp68",
-    // https://github.com/advisories/GHSA-hm92-r4w5-c3mj
-    "GHSA-hm92-r4w5-c3mj",
-    // https://github.com/advisories/GHSA-jr45-8vmc-qm54
-    "GHSA-jr45-8vmc-qm54",
     // https://github.com/advisories/GHSA-m8rv-5g2x-5cg5
     "GHSA-m8rv-5g2x-5cg5",
     // https://github.com/advisories/GHSA-mh99-v99m-4gvg
     "GHSA-mh99-v99m-4gvg",
     // https://github.com/advisories/GHSA-p88m-4jfj-68fv
     "GHSA-p88m-4jfj-68fv",
-    // https://github.com/advisories/GHSA-pr7r-676h-xcf6
-    "GHSA-pr7r-676h-xcf6",
     // // https://github.com/advisories/GHSA-qffp-2rhf-9h96
     "GHSA-qffp-2rhf-9h96",
     // https://github.com/advisories/GHSA-r28c-9q8g-f849
@@ -74,12 +60,8 @@
     "GHSA-rgw5-rvv9-x895",
     // https://github.com/advisories/GHSA-v3r7-h72x-cjcm
     "GHSA-v3r7-h72x-cjcm",
-    // https://github.com/advisories/GHSA-v6wh-96g9-6wx3
-    "GHSA-v6wh-96g9-6wx3",
     // https://github.com/advisories/GHSA-vmf3-w455-68vh
     "GHSA-vmf3-w455-68vh",
-    // https://github.com/advisories/GHSA-vmh5-mc38-953g
-    "GHSA-vmh5-mc38-953g",
     // https://github.com/advisories/GHSA-vxpw-j846-p89q
     "GHSA-vxpw-j846-p89q",
     // https://github.com/advisories/GHSA-w8wr-v893-vjvp
