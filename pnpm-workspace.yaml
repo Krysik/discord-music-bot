@@ -1,0 +1,19 @@
+# pnpm 12 stopped reading the "pnpm" field in package.json and node-linker from
+# .npmrc. Both settings live here now.
+
+# The container installs into a bind mount on an NTFS drive, and pnpm's default
+# symlinked layout is written as WSL-style reparse points that Windows-native
+# tools (IDE, TS language server) cannot follow. `hoisted` lays out node_modules
+# as real directories instead, so it resolves from both Windows and WSL.
+nodeLinker: hoisted
+
+# Replaces onlyBuiltDependencies, which pnpm 12 rewrites into this map. Every
+# dependency with a build script needs an explicit true/false or the install
+# fails with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  '@discordjs/opus': true
+  '@swc/core': true
+  esbuild: true
+  # Fetches the yt-dlp binary. main.ts registers the youtubei extractor with
+  # useYoutubeDL, so the binary has to be there.
+  youtube-dl-exec: true
