@@ -8,9 +8,6 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      # Store lives inside the bind mount, so it shares a filesystem with
-      # node_modules and pnpm can hardlink into it instead of copying.
-      - npm_config_store_dir=/app/.pnpm-store
     volumes:
       # Single bind mount, no named volume over node_modules: the container
       # installs the deps and the host IDE reads the same directory.
