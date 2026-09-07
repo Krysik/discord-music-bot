@@ -6,12 +6,17 @@ on:
 
   pull_request:
 
+# A newer push to the same branch makes the running deploy obsolete.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -40,51 +45,87 @@ jobs:
       - name: Check types
         run: pnpm run typecheck
 
-      - name: Build the app
-        run: pnpm run build
+  image:
+    needs: checks
+    runs-on: ubuntu-24.04
+
+    env:
+      DEPLOY: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
+      IMAGE: discord-bot:${{ github.sha }}
+      ARCHIVE: discord-bot.tar.zst
+      REMOTE_DIR: /home/${{ secrets.SSH_USERNAME }}/dcbot
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: prod-runner
+          tags: |
+            ${{ env.IMAGE }}
+            discord-bot:latest
+          provenance: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          outputs: ${{ env.DEPLOY == 'true' && format('type=docker,dest={0}/discord-bot.tar', github.workspace) || 'type=cacheonly' }}
+
+      - name: Compress the image
+        if: env.DEPLOY == 'true'
+        run: |
+          zstd -T0 -9 --rm -o "$ARCHIVE" discord-bot.tar
+          ls -lh "$ARCHIVE"
 
       - uses: twingate/github-action@v1.5
-        if: github.event_name == 'push' && github.ref_name == 'master'
+        if: env.DEPLOY == 'true'
         with:
           service-key: ${{ secrets.SERVICE_KEY }}
 
-      - name: Cleanup remote directory
-        if: github.event_name == 'push' && github.ref_name == 'master'
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          script: |
-            rm -rf ~/dcbot/app/node_modules
-            rm -rf ~/dcbot/app/dist
-            rm -rf ~/dcbot/app/.pnpm-store
-
-      - name: Copy files to the server
-        if: github.event_name == 'push' && github.ref_name == 'master'
+      - name: Copy the image to the server
+        if: env.DEPLOY == 'true'
         uses: appleboy/scp-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
-          source: './*'
-          target: '/home/${{ secrets.SSH_USERNAME }}/dcbot/app'
+          source: ${{ env.ARCHIVE }}
+          target: ${{ env.REMOTE_DIR }}
+          overwrite: true
 
-      - name: Run container
-        if: github.event_name == 'push' && github.ref_name == 'master'
+      - name: Load the image and restart the container
+        if: env.DEPLOY == 'true'
         uses: appleboy/ssh-action@v1.2.2
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.PRIVATE_KEY }}
+          command_timeout: 15m
           script: |
-            cd ~/dcbot/app
-            if [ "$(docker ps -aq -f name=discord-bot)" ]; then
-              docker rm discord-bot --force
+            set -euo pipefail
+            cd ~/dcbot
+
+            IMAGE="discord-bot:${{ github.sha }}"
+            ARCHIVE="discord-bot.tar.zst"
+
+            if command -v zstd >/dev/null 2>&1; then
+              zstd -dc "$ARCHIVE" | docker load
+            else
+              docker load -i "$ARCHIVE"
             fi
-            # optionally remove the old image
-            if [ "$(docker images -q discord-bot:latest)" ]; then
-              docker rmi discord-bot:latest --force
-            fi
-            docker build -t discord-bot:latest .
-            docker run -d --name discord-bot --env-file ../.env discord-bot
+            rm -f "$ARCHIVE"
+
+            docker rm -f discord-bot >/dev/null 2>&1 || true
+            docker run -d \
+              --name discord-bot \
+              --restart unless-stopped \
+              --env-file ~/dcbot/.env \
+              "$IMAGE"
+
+            # Keep the tag of the running version and `latest`, drop older ones.
+            docker images discord-bot --format '{{.Tag}}' \
+              | grep -vx -e "${IMAGE#*:}" -e latest \
+              | xargs -r -I{} docker rmi -f "discord-bot:{}" || true
+            docker image prune -f

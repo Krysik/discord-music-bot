@@ -4,6 +4,7 @@ node_modules/
 *.md
 build/
 .git
+.github/
 Dockerfile
 docker-compose.yml
 .pnpm-store/

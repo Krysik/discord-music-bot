@@ -1,60 +1,70 @@
-FROM node:23-bookworm-slim AS base
+# syntax=docker/dockerfile:1.7
+FROM node:23-bookworm-slim AS pnpm-base
 
 WORKDIR /app
-
-# Build tools needed for native modules (@discordjs/opus, @swc/core)
-RUN apt-get -y update \
-    && apt-get -y upgrade \
-    && apt-get install -y ffmpeg make g++
-
-# node:23 bundles corepack 0.32, which resolves the pnpm shim to bin/pnpm.cjs.
-# pnpm 12 ships bin/pnpm.mjs instead, so the bundled corepack fails with
-# MODULE_NOT_FOUND. Pinned rather than @latest because CI builds this image on
-# deploy; bump it alongside "packageManager".
 RUN npm install -g corepack@0.36.0 \
     && corepack enable
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-# Bakes the version from package.json's "packageManager" field into the image,
-# so the shim doesn't fetch pnpm on every container start.
 RUN corepack install
 
-RUN --mount=type=cache,target=/root/.npm \
-    --mount=type=bind,source=package.json,target=package.json \
-    pnpm install
+FROM pnpm-base AS build-base
+
+RUN apt-get -y update \
+    && apt-get install -y --no-install-recommends make g++ python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Development image (docker-compose target). The whole repo is bind-mounted over
+# /app, so this only needs the toolchain and the dependencies.
+FROM build-base AS base
+
+RUN apt-get -y update \
+    && apt-get -y upgrade \
+    && apt-get install -y --no-install-recommends ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile
 
 COPY . .
 
 CMD ["node", "-r", "@swc-node/register", "-r", "dotenv/config", "src/main.ts"]
 
 
-FROM node:23-bookworm-slim AS builder
+# Runtime dependencies only - this tree is what the final image ships.
+FROM build-base AS prod-deps
 
-ENV NODE_ENV=production
-
-WORKDIR /app
-
-RUN npm install -g corepack@0.36.0 \
-    && corepack enable
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-
-RUN corepack install
-
-RUN --mount=type=cache,target=/root/.npm \
-    --mount=type=bind,source=package.json,target=package.json \
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --prod --frozen-lockfile
+
+
+FROM build-base AS builder
+
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile
+
+COPY tsconfig.json ./
+COPY src ./src
 
 RUN pnpm run build
 
-FROM node:23-bookworm-slim as prod-runner
+
+FROM node:23-bookworm-slim AS prod-runner
 
 ENV NODE_ENV=production
+RUN apt-get -y update \
+    && apt-get -y upgrade \
+    && apt-get install -y --no-install-recommends ffmpeg python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-COPY --from=builder --chown=node:node /app/node_modules ./node_modules
+COPY --from=prod-deps --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/build ./build
+COPY --chown=node:node package.json ./
 
-CMD ["node", "-r", "dotenv/config", "main.js"]
+USER node
+
+CMD ["node", "-r", "dotenv/config", "build/main.js"]
