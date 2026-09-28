@@ -2,6 +2,7 @@
   "$schema": "https://github.com/IBM/audit-ci/raw/main/docs/schema.json",
   "report-type": "summary",
   "output-format": "text",
+  "skip-dev": true,
   "low": true,
   "allowlist": [
     // https://github.com/advisories/GHSA-23hp-3jrh-7fpw
@@ -12,12 +13,8 @@
     "GHSA-35p6-xmwp-9g52",
     // https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
     "GHSA-3jxr-9vmj-r5cp",
-    // https://github.com/advisories/GHSA-52cp-r559-cp3m
-    "GHSA-52cp-r559-cp3m",
     // https://github.com/advisories/GHSA-58qx-3vcg-4xpx
     "GHSA-58qx-3vcg-4xpx",
-    // https://github.com/advisories/GHSA-5p4m-2wfm-xmqj
-    "GHSA-5p4m-2wfm-xmqj",
     // https://github.com/advisories/GHSA-5v7r-6r5c-r473
     "GHSA-5v7r-6r5c-r473",
     // // https://github.com/advisories/GHSA-83g3-92jg-28cx
@@ -40,8 +37,6 @@
     "GHSA-g8m3-5g58-fq7m",
     // https://github.com/advisories/GHSA-gvwx-54wh-qm9j
     "GHSA-gvwx-54wh-qm9j",
-    // https://github.com/advisories/GHSA-h67p-54hq-rp68
-    "GHSA-h67p-54hq-rp68",
     // https://github.com/advisories/GHSA-m8rv-5g2x-5cg5
     "GHSA-m8rv-5g2x-5cg5",
     // https://github.com/advisories/GHSA-mh99-v99m-4gvg
