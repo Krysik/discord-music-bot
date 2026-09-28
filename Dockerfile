@@ -36,6 +36,7 @@ CMD ["node", "-r", "@swc-node/register", "-r", "dotenv/config", "src/main.ts"]
 # Runtime dependencies only - this tree is what the final image ships.
 FROM build-base AS prod-deps
 
+ENV NODE_ENV=production
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,sharing=locked \
     pnpm install --prod --frozen-lockfile
 
