@@ -47,13 +47,14 @@ jobs:
 
   image:
     needs: checks
-    runs-on: ubuntu-24.04
+    # The server is linux/arm64; an x64-built image fails there with "exec format error".
+    # Native arm runner instead of QEMU, which would crawl through the opus compile.
+    runs-on: ubuntu-24.04-arm
 
     env:
       DEPLOY: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
       IMAGE: discord-bot:${{ github.sha }}
       ARCHIVE: discord-bot.tar.zst
-      REMOTE_DIR: /home/${{ secrets.SSH_USERNAME }}/dcbot
 
     steps:
       - uses: actions/checkout@v5
@@ -65,6 +66,8 @@ jobs:
         with:
           context: .
           target: prod-runner
+          # Pinned so a runner change cannot silently ship the wrong architecture.
+          platforms: linux/arm64
           tags: |
             ${{ env.IMAGE }}
             discord-bot:latest
@@ -72,6 +75,14 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           outputs: ${{ env.DEPLOY == 'true' && format('type=docker,dest={0}/discord-bot.tar', github.workspace) || 'type=cacheonly' }}
+
+      # Before Twingate, so apt does not go through its DNS.
+      # zstd too: the arm runner image ships fewer tools than the x64 one.
+      - name: Install pv and zstd
+        if: env.DEPLOY == 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends pv zstd
 
       - name: Compress the image
         if: env.DEPLOY == 'true'
@@ -84,48 +95,61 @@ jobs:
         with:
           service-key: ${{ secrets.SERVICE_KEY }}
 
-      - name: Copy the image to the server
+      - name: Configure SSH
         if: env.DEPLOY == 'true'
-        uses: appleboy/scp-action@v1.0.0
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          source: ${{ env.ARCHIVE }}
-          target: ${{ env.REMOTE_DIR }}
-          overwrite: true
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
 
-      - name: Load the image and restart the container
+          # accept-new: same trust model as appleboy/* without `fingerprint`.
+          # ServerAlive*: drop a dead connection instead of hanging on it.
+          cat > ~/.ssh/config <<EOF
+          Host server
+            HostName $SSH_HOST
+            User $SSH_USERNAME
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking accept-new
+            ConnectTimeout 30
+            ServerAliveInterval 15
+            ServerAliveCountMax 4
+          EOF
+          chmod 600 ~/.ssh/config
+
+      # Streams the archive straight into `docker load`, no temp file on the server.
+      - name: Send and load the image
         if: env.DEPLOY == 'true'
-        uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.PRIVATE_KEY }}
-          command_timeout: 15m
-          script: |
-            set -euo pipefail
-            cd ~/dcbot
+        shell: bash
+        run: |
+          # Prints "<seconds> <percent>" every 10s, so a stalled transfer is visible in the log.
+          pv -f -n -t -i 10 "$ARCHIVE" \
+            | ssh server 'if command -v zstd >/dev/null 2>&1; then zstd -dc | docker load; else docker load; fi'
 
-            IMAGE="discord-bot:${{ github.sha }}"
-            ARCHIVE="discord-bot.tar.zst"
+      - name: Restart the container
+        if: env.DEPLOY == 'true'
+        run: |
+          ssh server bash -s -- "$IMAGE" <<'EOF'
+          set -euo pipefail
+          IMAGE="$1"
 
-            if command -v zstd >/dev/null 2>&1; then
-              zstd -dc "$ARCHIVE" | docker load
-            else
-              docker load -i "$ARCHIVE"
-            fi
-            rm -f "$ARCHIVE"
+          docker rm -f discord-bot >/dev/null 2>&1 || true
+          docker run -d \
+            --name discord-bot \
+            --restart unless-stopped \
+            --env-file ~/dcbot/.env \
+            "$IMAGE"
 
-            docker rm -f discord-bot >/dev/null 2>&1 || true
-            docker run -d \
-              --name discord-bot \
-              --restart unless-stopped \
-              --env-file ~/dcbot/.env \
-              "$IMAGE"
+          # Keep the tag of the running version and `latest`, drop older ones.
+          docker images discord-bot --format '{{.Tag}}' \
+            | grep -vx -e "${IMAGE#*:}" -e latest \
+            | xargs -r -I{} docker rmi -f "discord-bot:{}" || true
+          docker image prune -f
 
-            # Keep the tag of the running version and `latest`, drop older ones.
-            docker images discord-bot --format '{{.Tag}}' \
-              | grep -vx -e "${IMAGE#*:}" -e latest \
-              | xargs -r -I{} docker rmi -f "discord-bot:{}" || true
-            docker image prune -f
+          # Leftover from the old scp-based deploy.
+          rm -f ~/dcbot/discord-bot.tar.zst
+          EOF
