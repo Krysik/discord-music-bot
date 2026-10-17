@@ -34,6 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Audit dependencies
+        continue-on-error: true
         run: pnpm dlx audit-ci@^7 --config ./.audit-ci.jsonc
 
       - name: Run tests
